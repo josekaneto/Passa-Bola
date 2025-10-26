@@ -44,7 +44,7 @@ function Login() {
                     <VoltarButton onClick={() => router.back()} />
                 </div>
                 <div className="w-3/4 flex flex-col gap-10">
-                    <img className="w-24 md:w-32 mx-auto md:mx-0" src="/Logo-preta.png" alt="Logo Passa Bola Branca" />
+                    <img className="w-24 md:w-32 mx-auto md:mx-0" src="/Logo.svg" alt="Logo Passa Bola Branca" />
                     <h2 className="text-2xl md:text-4xl font-bold text-center md:text-left font-title">Entrar</h2>
                 </div>
                 <form id="loginForm" className="w-3/4 flex flex-col gap-6 mt-8" onSubmit={handleSubmit}>
@@ -70,16 +70,13 @@ function Login() {
                     </div>
                     <div className="w-full flex justify-end">
                         <Link
-                            className="text-center text-lg text-pink "
-                            href={{
-                                pathname: "/esqueciMinhaSenha",
-                                query: { email }
-                            }}
+                            className="text-center text-lg text-pink"
+                            href={`/user/login/esqueciMinhaSenha/${email}`}
                         >
                             Esqueci minha senha?
                         </Link> 
                     </div>
-                    <button className="bg-pink text-white py-3 rounded-lg font-bold text-center hover:bg-pink/90 duration-300" type="submit">Entrar</button>
+                    <button className="bg-pink text-white py-3 rounded-lg font-bold text-center hover:bg-pink/90 hover:scale-105 cursor-pointer duration-300" type="submit">Entrar</button>
                     {erro ? (
                         <p className="text-center text-red-500 text-lg">{erro}</p>
                     ) : null}

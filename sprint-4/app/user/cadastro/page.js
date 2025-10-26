@@ -53,7 +53,7 @@ function CadastreSe() {
                     <VoltarButton onClick={() => router.back()} />
                 </div>
                 <div className="w-3/4 flex flex-col gap-10">
-                    <img className="w-24 md:w-32 mx-auto md:mx-0" src="/Logo-preta.png" alt="Logo Passa Bola Preta" />
+                    <img className="w-24 md:w-32 mx-auto md:mx-0" src="/Logo.svg" alt="Logo Passa Bola Preta" />
                     <h2 className="text-2xl md:text-4xl font-bold text-center md:text-left font-title">Cadastre-se</h2>
                 </div>
                 <form onSubmit={handleSubmit} className="w-3/4 flex flex-col gap-6 mt-8">
@@ -70,8 +70,8 @@ function CadastreSe() {
                         <Input name="pernaDominante" type="text" placeholder="Perna dominante" value={form.pernaDominante} onChange={handleChange} required />
                         <Input name="senha" type="password" placeholder="Senha" value={form.senha} onChange={handleChange} required />
                         <Input name="confirmacaoSenha" type="password" placeholder="Confirmação de senha" value={form.confirmacaoSenha} onChange={handleChange} required />
-                    </div>
-                    <button className="bg-pink-500 text-white text-center py-3 rounded-lg font-bold w-full text-lg hover:bg-pink-500/90 duration-300" type="submit" >Criar</button>
+                    </div> 
+                    <button className="bg-pink-500 text-white text-center py-3 rounded-lg font-bold w-full text-lg hover:bg-pink-500/90 hover:scale-105 cursor-pointer duration-300" type="submit" >Criar</button>
                     {erro && <p className="text-center text-red-500 text-lg">{erro}</p>}
                     <p className="text-center text-lg">Já tem uma conta? <a className="text-pink font-bold" href="/user/login">Entrar</a></p>
                 </form>
