@@ -7,7 +7,7 @@ export default function ProfileSection({ img, text, reverse = false, alt }) {
                 <div className={"flex w-1/2 justify-center"} data-aos={reverse ? "fade-left" : "fade-right"} data-aos-duration="1200">
                     <div className="rounded-2xl overflow-hidden shadow-xl border-4 border-purple flex justify-center items-center bg-white w-72 h-7 md:w-96 md:h-96">
                         <img
-                            src={img}
+                            src={`${img}`}
                             alt={alt}
                             className="object-cover w-full h-full"
                         />
