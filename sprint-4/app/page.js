@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Header from "./Components/Header";
 import ProfileSection from "./Components/ProfileSection";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import ContactSection from "./Components/ContactSection";
@@ -13,6 +13,7 @@ import "swiper/css/pagination";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Footer from "./Components/Footer";
+import LoadingScreen from "./Components/LoadingScreen";
 
 const links = [
   { label: "Início", href: "/" },
@@ -22,13 +23,25 @@ const links = [
 ];
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     AOS.init({ once: true });
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000); // Simula 2 segundos de carregamento
+
+    return () => clearTimeout(timer); // Limpa o timer se o componente for desmontado
   }, []);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <>
-      <section className="w-screen min-h-screen bg-center bg-no-repeat bg-cover bg-[url(/background1.png)] flex flex-col items-center relative font-corpo">
+      <section className="w-full min-h-screen bg-center bg-no-repeat bg-cover bg-[url(/background1.png)] flex flex-col items-center relative font-corpo">
         <Header links={links} />
         <div
           className="w-full max-w-[80%] px-4 sm:px-6 flex flex-col justify-center items-center sm:items-start absolute top-0 left-1/2 -translate-x-1/2 h-full"

@@ -23,13 +23,13 @@ export default function Header({ links }) {
     return (
         <>
             <header
-                className="w-full max-w-[80%] mx-auto flex justify-between items-center py-2 px-4 md:px-20 font-corpo bg-white/40 rounded-xl mt-5 border-2 border-purple z-40"
+                className="w-full max-w-[80%] mx-auto flex justify-between items-center py-2 px-4 md:px-20 font-corpo bg-white/60 rounded-xl my-5 border-2 border-purple z-40"
                 data-aos="fade-down"
                 data-aos-duration="1000"
             >
                 <div className="flex items-center gap-3">
                     <img className="w-24 md:w-28" src="/Logo.svg" alt="Logo Passa Bola" data-aos="zoom-in" data-aos-delay="200" />
-                    <h1 className="font-bold font-title text-lg md:text-4xl bg-gradient-to-r from-green via-pink to-purple bg-clip-text text-transparent" data-aos="fade-right" data-aos-delay="400">PASSA BOLA</h1>
+                    <h1 className="font-bold hidden font-title text-lg md:text-4xl lg:block bg-gradient-to-r from-green via-pink to-purple bg-clip-text text-transparent" data-aos="fade-right" data-aos-delay="400">PASSA BOLA</h1>
                 </div>
                 <nav className="hidden lg:block ml-auto">
                     <ul className="flex gap-7 md:gap-10 text-lg">
@@ -69,7 +69,7 @@ export default function Header({ links }) {
             {/* Menu Lateral */}
             <div
                 id="mobile-menu"
-                className={`fixed top-0 right-0 h-full w-1/3 max-w-sm bg-white shadow-lg z-50 transition-all duration-300 ease-in-out lg:hidden ${menuOpen ? 'translate-x-0 opacity-100 visible' : 'translate-x-full opacity-0 invisible'}`}
+                className={`fixed top-0 right-0 h-full sm:w-2/3 md:w-1/3 max-w-sm bg-white shadow-lg z-50 transition-all duration-300 ease-in-out lg:hidden ${menuOpen ? 'translate-x-0 opacity-100 visible' : 'translate-x-full opacity-0 invisible'}`}
             >
                 <div className="flex justify-between items-center p-4 border-b">
                     <div className="flex items-center gap-3">
