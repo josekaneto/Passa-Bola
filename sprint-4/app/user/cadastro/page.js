@@ -48,15 +48,15 @@ function CadastreSe() {
 
     return (
         <div className="w-full min-h-svh lg:bg-[url('/campo.jpg')] lg:bg-cover lg:bg-center flex items-center justify-center bg-none font-corpo">
-            <div className="mx-auto w-full max-w-3xl md:max-w-6xl bg-white/90 bg-opacity-90 rounded-3xl flex flex-col justify-center items-center py-8 px-4 md:px-10">
-                <div className="w-3/4 flex justify-end">
+            <div className="mx-auto w-full max-w-3xl md:max-w-6xl bg-white/90 bg-opacity-90 rounded-3xl flex flex-col justify-center items-center py-8 px-4 md:px-10" data-aos="fade-down" data-aos-delay="100">
+                <div className="w-3/4 flex justify-end" data-aos="fade-down" data-aos-delay="150">
                     <VoltarButton onClick={() => router.back()} />
                 </div>
                 <div className="w-3/4 flex flex-col gap-10">
-                    <img className="w-24 md:w-32 mx-auto md:mx-0" src="/Logo.svg" alt="Logo Passa Bola Preta" />
-                    <h2 className="text-2xl md:text-4xl font-bold text-center md:text-left font-title">Cadastre-se</h2>
+                    <img className="w-24 md:w-32 mx-auto md:mx-0" src="/Logo.svg" alt="Logo Passa Bola Preta" data-aos="zoom-in" data-aos-delay="200" />
+                    <h2 className="text-2xl md:text-4xl font-bold text-center md:text-left font-title" data-aos="fade-down" data-aos-delay="250">Cadastre-se</h2>
                 </div>
-                <form onSubmit={handleSubmit} className="w-3/4 flex flex-col gap-6 mt-8">
+                <form onSubmit={handleSubmit} className="w-3/4 flex flex-col gap-6 mt-8" data-aos="fade-down" data-aos-delay="300">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
                         <Input name="nomeCompleto" type="text" placeholder="Nome completo" value={form.nomeCompleto} onChange={handleChange} required />
                         <Input name="dataNascimento" type="date" placeholder="Data de nascimento" value={form.dataNascimento} onChange={handleChange} required />
@@ -70,9 +70,9 @@ function CadastreSe() {
                         <Input name="pernaDominante" type="text" placeholder="Perna dominante" value={form.pernaDominante} onChange={handleChange} required />
                         <Input name="senha" type="password" placeholder="Senha" value={form.senha} onChange={handleChange} required />
                         <Input name="confirmacaoSenha" type="password" placeholder="Confirmação de senha" value={form.confirmacaoSenha} onChange={handleChange} required />
-                    </div> 
-                    <button className="bg-pink-500 text-white text-center py-3 rounded-lg font-bold w-full text-lg hover:bg-pink-500/90 hover:scale-105 cursor-pointer duration-300" type="submit" >Criar</button>
-                    {erro && <p className="text-center text-red-500 text-lg">{erro}</p>}
+                    </div>
+                    <button className="bg-pink-500 text-white text-center py-3 rounded-lg font-bold w-full text-lg hover:border-green border cursor-pointer" type="submit" data-aos="zoom-in" data-aos-delay="400">Criar</button>
+                    {erro && <p className="text-center text-red-500 text-lg" data-aos="fade-down" data-aos-delay="450">{erro}</p>}
                     <p className="text-center text-lg">Já tem uma conta? <a className="text-pink font-bold" href="/user/login">Entrar</a></p>
                 </form>
             </div>

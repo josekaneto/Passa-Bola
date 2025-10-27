@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,7 +20,6 @@ function Login() {
             setErro("Preencha todos os campos.");
             return;
         }
-        // Busca usuários no localStorage
         const usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]");
         if (!usuarios.length) {
             setErro("Nenhum usuário cadastrado. Cadastre-se primeiro!");
@@ -30,7 +29,6 @@ function Login() {
         if (usuario) {
             setErro("");
             setSucesso("Login realizado com sucesso!");
-            // Redireciona para página exclusiva do usuário
             window.location.href = `/inicioposlogin/${usuario.id}`;
         } else {
             setErro("Email ou senha inválidos.");
@@ -39,16 +37,24 @@ function Login() {
 
     return (
         <div className="w-full min-h-screen lg:bg-[url('/campo.png')] lg:bg-cover lg:bg-center flex items-center justify-center bg-none font-corpo">
-            <div className="mx-auto w-full max-w-3xl md:max-w-6xl bg-white/90 bg-opacity-90 rounded-3xl flex flex-col justify-center items-center py-10 px-4 md:px-10">
-                <div className="w-3/4 flex justify-end">
+            {/* Container com stagger: filhos com data-aos receberão delays incrementais */}
+            <div className="mx-auto w-full max-w-3xl md:max-w-6xl bg-white/90 bg-opacity-90 rounded-3xl flex flex-col justify-center items-center py-10 px-4 md:px-10"
+                data-aos-stagger
+                data-aos-stagger-delay="90"
+                data-aos="fade-down"
+                data-aos-duration="650"
+            >
+                <div className="w-3/4 flex justify-end" data-aos="fade-down">
                     <VoltarButton onClick={() => router.back()} />
                 </div>
-                <div className="w-3/4 flex flex-col gap-10">
-                    <img className="w-24 md:w-32 mx-auto md:mx-0" src="/Logo.svg" alt="Logo Passa Bola Branca" />
-                    <h2 className="text-2xl md:text-4xl font-bold text-center md:text-left font-title">Entrar</h2>
+
+                <div className="w-3/4 flex flex-col gap-10" data-aos="fade-down">
+                    <img className="w-24 md:w-32 mx-auto md:mx-0" src="/Logo.svg" alt="Logo Passa Bola Branca" data-aos="zoom-in" data-aos-duration="700" />
+                    <h2 className="text-2xl md:text-4xl font-bold text-center md:text-left font-title" data-aos="fade-down">Entrar</h2>
                 </div>
-                <form id="loginForm" className="w-3/4 flex flex-col gap-6 mt-8" onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 gap-8 w-full">
+
+                <form id="loginForm" className="w-3/4 flex flex-col gap-6 mt-8" onSubmit={handleSubmit} data-aos="fade-down">
+                    <div className="grid grid-cols-1 gap-8 w-full" data-aos="fade-down">
                         <Input
                             name="email"
                             className="w-full py-2 border-b-2 border-gray-400 focus:border-pink-500 focus:outline-none"
@@ -68,27 +74,29 @@ function Login() {
                             onChange={e => setSenha(e.target.value)}
                         />
                     </div>
-                    <div className="w-full flex justify-end">
-                        <Link
-                            className="text-center text-lg text-pink"
-                            href={`/user/login/esqueciMinhaSenha/${email}`}
-                        >
+
+                    <div className="w-full flex justify-end" data-aos="fade-left">
+                        <Link className="text-center text-lg text-pink" href={`/user/login/esqueciMinhaSenha/${email}`}>
                             Esqueci minha senha?
-                        </Link> 
+                        </Link>
                     </div>
-                    <button className="bg-pink text-white py-3 rounded-lg font-bold text-center hover:bg-pink/90 hover:scale-105 cursor-pointer duration-300" type="submit">Entrar</button>
+
+                    <button className="bg-pink text-white py-3 rounded-lg font-bold text-center cursor-pointer hover:border-green border" type="submit" data-aos="zoom-in">Entrar</button>
+
                     {erro ? (
-                        <p className="text-center text-red-500 text-lg">{erro}</p>
+                        <p className="text-center text-red-500 text-lg" data-aos="fade-down">{erro}</p>
                     ) : null}
                     {sucesso ? (
-                        <p className="text-center text-green-600 text-lg">{sucesso}</p>
+                        <p className="text-center text-green-600 text-lg" data-aos="fade-down">{sucesso}</p>
                     ) : null}
-                    <div className="w-full flex justify-center py-6 rounded-lg">
-                        <p className="text-lg text-center">Não tem uma conta? 
+
+                    <div className="w-full flex justify-center py-6 rounded-lg" data-aos="fade-down">
+                        <p className="text-lg text-center">Não tem uma conta?
                             <Link className="text-pink font-bold" href="/user/cadastro"> Cadastre-se </Link>
                         </p>
                     </div>
-                    <div className="w-full flex justify-center">
+
+                    <div className="w-full flex justify-center" data-aos="fade-down">
                         <Link href="#" className="w-full md:w-1/2 flex items-center justify-center gap-x-3 py-3 text-lg border-2 border-pink rounded-xl">
                             <img src="/google.png" alt="Google" />
                             Entrar com o Google
