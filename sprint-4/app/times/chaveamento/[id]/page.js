@@ -1,11 +1,11 @@
 'use client';
-import Header from "@/app/Components/Header";
-import MainContainer from "@/app/Components/MainContainer";
-import VoltarButton from "@/app/Components/VoltarButton";
+import Header from "../../../Components/Header";
+import MainContainer from "../../../Components/MainContainer";
+import VoltarButton from "../../../Components/VoltarButton";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import LoadingScreen from "@/app/Components/LoadingScreen";
-import AuthGuard from "@/app/Components/AuthGuard";
+import LoadingScreen from "../../../Components/LoadingScreen";
+import AuthGuard from "../../../Components/AuthGuard";
 import { SingleEliminationBracket, Match, SVGViewer } from "@elyasasmad/react-tournament-brackets";
 
 export default function ChaveamentoPage() {

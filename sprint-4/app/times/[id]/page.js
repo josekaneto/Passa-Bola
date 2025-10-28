@@ -1,14 +1,14 @@
 'use client';
 
-import Header from "@/app/Components/Header";
-import TimeCard from "@/app/Components/TimeCard";
-import SectionContainer from "@/app/Components/SectionContainer";
-import MainContainer from "@/app/Components/MainContainer";
+import Header from "../../Components/Header";
+import TimeCard from "../../Components/TimeCard";
+import SectionContainer from "../../Components/SectionContainer";
+import MainContainer from "../../Components/MainContainer";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import LoadingScreen from "@/app/Components/LoadingScreen";
-import AuthGuard from "@/app/Components/AuthGuard";
+import LoadingScreen from "../../Components/LoadingScreen";
+import AuthGuard from "../../Components/AuthGuard";
 
 
 export default function PaginaUsuario() {

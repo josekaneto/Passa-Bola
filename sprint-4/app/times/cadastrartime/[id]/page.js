@@ -1,14 +1,14 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import LoadingScreen from '@/app/Components/LoadingScreen';
-import AuthGuard from '@/app/Components/AuthGuard';
-import Header from '@/app/Components/Header';
-import MainContainer from '@/app/Components/MainContainer';
-import SectionContainer from '@/app/Components/SectionContainer';
-import Input from '@/app/Components/Input';
-import ColorInput from '@/app/Components/ColorInput';
+import LoadingScreen from '../../../Components/LoadingScreen';
+import AuthGuard from '../../../Components/AuthGuard';
+import Header from '../../../Components/Header';
+import MainContainer from '../../../Components/MainContainer';
+import SectionContainer from '../../../Components/SectionContainer';
+import Input from '../../../Components/Input';
+import ColorInput from '../../../Components/ColorInput';
 import Link from 'next/link';
-import VoltarButton from '@/app/Components/VoltarButton';
+import VoltarButton from '../../../Components/VoltarButton';
 import { useParams, useRouter } from 'next/navigation';
 
 

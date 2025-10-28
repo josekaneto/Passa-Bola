@@ -1,9 +1,9 @@
 "use client";
-import Header from "@/app/Components/Header";
-import MainContainer from "@/app/Components/MainContainer";
-import SectionContainer from "@/app/Components/SectionContainer";
-import VoltarButton from "@/app/Components/VoltarButton";
-import JogadoraCard from "@/app/Components/JogadoraCard";
+import Header from "../../../Components/Header";
+import MainContainer from "../../../Components/MainContainer";
+import SectionContainer from "../../../Components/SectionContainer";
+import VoltarButton from "../../../Components/VoltarButton";
+import JogadoraCard from "../../../Components/JogadoraCard";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

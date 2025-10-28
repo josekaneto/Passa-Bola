@@ -1,14 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
-import MainContainer from "@/app/Components/MainContainer";
-import SectionContainer from "@/app/Components/SectionContainer";
-import Input from "@/app/Components/Input";
-import VoltarButton from "@/app/Components/VoltarButton";
+import MainContainer from "../../../../Components/MainContainer";
+import SectionContainer from "../../../../Components/SectionContainer";
+import Input from "../../../../Components/Input";
+import VoltarButton from "../../../../Components/VoltarButton";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import Header from "@/app/Components/Header";
-import LoadingScreen from "@/app/Components/LoadingScreen";
-import AuthGuard from "@/app/Components/AuthGuard";
+import Header from "../../../../Components/Header";
+import LoadingScreen from "../../../../Components/LoadingScreen";
+import AuthGuard from "../../../../Components/AuthGuard";
 
 export default function ConvidarJogadoras() {
     const [loading, setLoading] = useState(true);
