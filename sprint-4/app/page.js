@@ -14,6 +14,7 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import Footer from "./Components/Footer";
 import LoadingScreen from "./Components/LoadingScreen";
+import { FaArrowDown, FaInstagram, FaTiktok, FaYoutube } from "react-icons/fa";
 
 const links = [
   { label: "Início", href: "/" },
@@ -40,7 +41,7 @@ export default function Home() {
   }
 
   return (
-    <>
+    <main className="flex wf min-h-screen flex-col bg-gray-100 text-gray-800 font-corpo overflow-x-hidden">
       <section className="w-full min-h-screen bg-center bg-no-repeat bg-cover bg-[url(/background1.png)] flex flex-col items-center relative font-corpo">
         <Header links={links} />
         <div
@@ -49,7 +50,7 @@ export default function Home() {
           data-aos-duration="1200"
         >
           <span className="bg-pink text-white px-3 py-1 rounded-full mb-4 text-sm font-semibold" data-aos="fade-right" data-aos-delay="200">
-            Copa PAB 2025
+            Passa Bola
           </span>
           <h1 className="text-4xl sm:text-5xl font-bold font-title text-white mb-6 w-full md:w-full" data-aos="fade-right" data-aos-delay="400">
             ELAS NO COMANDO: O FUTURO DO FUTEBOL COMEÇA AQUI
@@ -67,18 +68,12 @@ export default function Home() {
           </Link>
         </div>
         <div
-          className="absolute bottom-2 left-1/2 -translate-x-1/2 flex flex-col items-center"
+          className="absolute bottom-20 z-10 flex flex-col items-center gap-2 text-white"
           data-aos="fade-up"
-          data-aos-delay="1000"
+          data-aos-delay="500"
         >
-          <span className="text-white text-sm font-semibold bg-green/40 px-4 py-2 rounded-full shadow-lg mb-2">
-            Role para baixo e descubra mais!
-          </span>
-          <img
-            src="/arrow.gif"
-            alt="Seta para baixo animada"
-            className="w-20 h-20"
-          />
+          <span className="text-sm animate-bounce text-green font-bold">Role para saber mais</span>
+          <FaArrowDown className="animate-bounce text-green" />
         </div>
       </section>
 
@@ -92,66 +87,38 @@ export default function Home() {
           </p>
 
           <ProfileSection
-            img="/luana.jpg"
+            src="luana.jpg"
             alt="Luana Maluf"
             text="Luana Maluf é uma das principais vozes femininas do jornalismo esportivo brasileiro. Com uma carreira marcada por dedicação, carisma e conhecimento, Luana se destaca na cobertura de futebol, trazendo análises precisas e uma abordagem inspiradora sobre o protagonismo das mulheres no esporte. Sua presença nos campos e transmissões é sinônimo de credibilidade e paixão pelo futebol."
             reverse
           />
 
           <ProfileSection
-            img="/ale.jpeg"
+            src="ale.jpeg"
             alt="Ale Xavier"
             text="Ale Xavier é referência quando o assunto é futebol e representatividade feminina na mídia esportiva. Comunicadora nata, Ale conquistou o público com seu jeito autêntico, didático e engajado, tornando-se uma das principais influenciadoras do segmento. Sua trajetória inspira novas gerações de mulheres a ocuparem espaços de destaque no esporte brasileiro. Além disso, Ale é reconhecida por sua atuação em projetos sociais ligados ao futebol e por incentivar o debate sobre igualdade de gênero no esporte. Sua voz é símbolo de transformação e inspiração."
           />
         </div>
       </section>
 
-      <section className="w-full bg-purple flex justify-center px-4 py-12">
-        <div className="w-full max-w-[80%] px-4 sm:px-6 flex flex-col items-center" data-aos="fade-up" data-aos-duration="1000">
-          <h2 className="text-4xl font-bold text-white mb-8 font-title">
-            Junte-se a Nós na Jornada da Copa PAB!
-          </h2>
-          <p className="text-white max-w-2xl mb-8">
-            Seja parte dessa nova era do futebol feminino.
-            Acompanhe as partidas, apoie as atletas e celebre cada momento dessa incrível jornada conosco.
-            A Copa PAB é feita por e para vocês!
-          </p>
-
-          <div className="w-full">
-            <Swiper
-              modules={[Navigation, Pagination, Autoplay]}
-              spaceBetween={20}
-              slidesPerView={1}
-              breakpoints={{
-                640: { slidesPerView: 1, spaceBetween: 20 },
-                768: { slidesPerView: 1, spaceBetween: 24 },
-                1024: { slidesPerView: 2, spaceBetween: 30 },
-              }}
-              autoplay={{ delay: 2500, disableOnInteraction: true }}
-              loop
-              className="rounded-2xl shadow-2xl"
-            >
-              <SwiperSlide>
-                <img src="/encontro-PAB-01.jpg" alt="Torcida no estádio" className="w-full h-96 object-cover rounded-2xl" />
-              </SwiperSlide>
-              <SwiperSlide>
-                <img src="/encontro-PAB-02.jpg" alt="Futebol coletivo 2" className="w-full h-96 object-cover rounded-2xl" />
-              </SwiperSlide>
-              <SwiperSlide>
-                <img src="/encontro-PAB-03.jpg" alt="Selfie no campo" className="w-full h-96 object-cover rounded-2xl" />
-              </SwiperSlide>
-              <SwiperSlide>
-                <img src="/encontro-PAB-04.jpg" alt="Selfie no campo" className="w-full h-96 object-cover rounded-2xl" />
-              </SwiperSlide>
-            </Swiper>
-          </div>
-
-          <div className="flex justify-center mt-8 w-full">
-            <Link
-              href="/user/cadastro"
-              className="bg-pink text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:scale-105 transition-transform duration-500"
-            >
-              Cadastre-se agora!
+      <section className="py-16 sm:py-20 bg-purple w-full">
+        <div className="container mx-auto px-4 text-center" data-aos="fade-up">
+          <h2 className="text-4xl font-bold text-white mb-12 font-title">Nossas Redes, Nossa Voz</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <Link href="https://www.youtube.com/@passabola" target="_blank" rel="noopener noreferrer" className="group block p-6 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+              <FaYoutube className="text-6xl text-red-600 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-800 mb-2 font-title">YouTube</h3>
+              <p className="text-gray-600">Acompanhe nossos podcasts, debates e análises exclusivas sobre o universo do futebol feminino.</p>
+            </Link>
+            <Link href="https://www.instagram.com/passaabola" target="_blank" rel="noopener noreferrer" className="group block p-6 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+              <FaInstagram className="text-6xl text-pink-500 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-800 mb-2 font-title">Instagram</h3>
+              <p className="text-gray-600">Fique por dentro de tudo sobre o futebol feminino, notícias, bastidores da copa e muito mais.</p>
+            </Link>
+            <Link href="https://www.tiktok.com/@passabola" target="_blank" rel="noopener noreferrer" className="group block p-6 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+              <FaTiktok className="text-6xl text-blue-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-800 mb-2 font-title">TikTok</h3>
+              <p className="text-gray-600">Divirta-se com nossos desafios, acompanhe a rotina das jogadoras e veja os lances mais criativos.</p>
             </Link>
           </div>
         </div>
@@ -160,6 +127,6 @@ export default function Home() {
       <ContactSection />
       <SectionCopa />
       <Footer  />
-    </>
+    </main>
   );
 }

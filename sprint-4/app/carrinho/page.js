@@ -14,6 +14,7 @@ export default function CarrinhoPage() {
     const [couponCode, setCouponCode] = useState("");
     const [discount, setDiscount] = useState(0);
     const [couponError, setCouponError] = useState("");
+    const [showCouponBanner, setShowCouponBanner] = useState(true);
     const router = useRouter();
 
     const links = [
@@ -31,7 +32,6 @@ export default function CarrinhoPage() {
             }
             setLoading(false);
         }, 1000);
-
         return () => clearTimeout(timer);
     }, []);
 
@@ -122,6 +122,14 @@ export default function CarrinhoPage() {
             </div>
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {showCouponBanner && (
+                    <div className="bg-pink/10 border-l-4 border-pink text-pink p-4 rounded-lg mb-6 flex justify-between items-center shadow" role="alert">
+                        <p className="font-semibold">
+                            ✨ Use o cupom <span className="font-bold">PAB10</span> para 10% de desconto!
+                        </p>
+                        <button onClick={() => setShowCouponBanner(false)} className="text-pink font-bold text-2xl leading-none">&times;</button>
+                    </div>
+                )}
                 <div className="flex flex-col gap-6">
                     <div className="flex justify-between items-center">
                         <h1 className="text-4xl font-bold text-pink font-title">MEU CARRINHO</h1>

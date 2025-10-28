@@ -59,8 +59,7 @@ function CadastreSe() {
                 <form onSubmit={handleSubmit} className="w-3/4 flex flex-col gap-6 mt-8" data-aos="fade-down" data-aos-delay="300">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
                         <Input name="nomeCompleto" type="text" placeholder="Nome completo" value={form.nomeCompleto} onChange={handleChange} required />
-                        <Input name="dataNascimento" type="date" placeholder="Data de nascimento" value={form.dataNascimento} onChange={handleChange} required />
-                        <Input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required />
+                        <Input name="dataNascimento" type="text" placeholder="Data de nascimento (DD/MM/AAAA)" value={form.dataNascimento} onChange={handleChange} required mask="date" />                        <Input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required />
                         <Input name="telefone" type="tel" placeholder="Número do telefone" value={form.telefone} onChange={handleChange} required />
                         <Input name="nomeCamisa" type="text" placeholder="Nome na camisa" value={form.nomeCamisa} onChange={handleChange} required />
                         <Input name="numeroCamisa" type="number" placeholder="Número da camisa" value={form.numeroCamisa} onChange={handleChange} required />

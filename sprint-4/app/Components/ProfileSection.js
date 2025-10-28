@@ -1,12 +1,12 @@
 import Image from "next/image";
 
-export default function ProfileSection({ img, text, reverse = false, alt }) {
+export default function ProfileSection({ src, text, reverse = false, alt }) {
     return (
         <section className="w-full flex justify-center">
             <div className={`w-full flex flex-col lg:flex-row ${reverse ? 'lg:flex-row-reverse' : ''} items-center gap-6 py-12 px-4`}>
                 <div className="w-full md:w-1/2 flex justify-center" data-aos={reverse ? "fade-left" : "fade-right"} data-aos-duration="1200">
                     <div className="relative rounded-2xl overflow-hidden shadow-xl border-4 border-purple bg-white w-[280px] h-[280px] md:w-96 md:h-96">
-                        <Image src={img} alt={alt} fill className="object-cover" />
+                        <img src={`/${src}`} alt={alt} className="object-cover" />
                     </div>
                 </div>
 
