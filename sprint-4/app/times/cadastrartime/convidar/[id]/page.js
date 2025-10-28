@@ -1,14 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import MainContainer from "../../../../Components/MainContainer";
-import SectionContainer from "../../../../Components/SectionContainer";
-import Input from "../../../../Components/Input";
-import VoltarButton from "../../../../Components/VoltarButton";
+
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import Header from "../../../../Components/Header";
-import LoadingScreen from "../../../../Components/LoadingScreen";
-import AuthGuard from "../../../../Components/AuthGuard";
+import AuthGuard from "@/app/Components/AuthGuard";
+import LoadingScreen from "@/app/Components/LoadingScreen";
+import Header from "@/app/Components/Header";
+
 
 export default function ConvidarJogadoras() {
     const [loading, setLoading] = useState(true);
@@ -68,7 +66,7 @@ export default function ConvidarJogadoras() {
     return (
         <AuthGuard>
             <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-            <MainContainer classeAdicional="md:py-10">
+            {/* <MainContainer classeAdicional="md:py-10">
                 <SectionContainer tamanho={650}>
                     <div className="h-full min-h-screen sm:min-h-0 sm:h-auto flex flex-col justify-between">
                         <div className="w-full flex justify-end mb-2">
@@ -125,7 +123,7 @@ export default function ConvidarJogadoras() {
                         </div>
                     </div>
                 </SectionContainer>
-            </MainContainer>
+            </MainContainer> */}
         </AuthGuard>
     );
 }

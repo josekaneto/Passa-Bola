@@ -86,7 +86,7 @@ export default function CadastrarTime() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-pink-50">
             <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-            <MainContainer>
+            {/* <MainContainer>
                 <SectionContainer tamanho={700}>
                     <div className="mb-6">
                         <div className="w-full flex justify-end">
@@ -151,7 +151,7 @@ export default function CadastrarTime() {
                         </form>
                     </div>
                 </SectionContainer>
-            </MainContainer>
+            </MainContainer> */}
         </div>
     );
 }

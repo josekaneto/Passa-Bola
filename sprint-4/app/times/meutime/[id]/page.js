@@ -56,7 +56,7 @@ export default function MeuTime() {
 	return (
         <>
         <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-		<MainContainer>
+		{/* <MainContainer>
 			<SectionContainer tamanho={800}>
                 <div className="w-full flex justify-end mb-4">
                     <VoltarButton onClick={() => router.push(`/times/${id}`)} />
@@ -103,7 +103,7 @@ export default function MeuTime() {
 					</div>
 				</div>
 			</SectionContainer>
-		</MainContainer>
+		</MainContainer> */}
         </>
 	);
 }

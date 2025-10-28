@@ -119,7 +119,7 @@ export default function ChaveamentoPage() {
     return (
         <AuthGuard>
             <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-            <MainContainer>
+            {/* <MainContainer>
                 <div className="min-h-screen w-full flex flex-col items-center px-2 md:px-8 py-6 md:py-10">
                     <div className="w-full max-w-xs md:max-w-2xl flex flex-col items-center justify-center gap-2 mb-6 text-center bg-white rounded-2xl shadow-lg p-2 md:p-6 border-2 border-pink-300">
                         <div className="w-full flex justify-end px-2 md:px-4">
@@ -155,7 +155,7 @@ export default function ChaveamentoPage() {
                         )}
                     </div>
                 </div>
-            </MainContainer>
+            </MainContainer> */}
         </AuthGuard>
     );
 }

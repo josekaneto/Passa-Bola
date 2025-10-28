@@ -63,7 +63,7 @@ export default function PaginaUsuario() {
         <AuthGuard>
             <div >
                 <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-                <MainContainer>
+                {/* <MainContainer>
                     <SectionContainer tamanho={850}>
                         <div className="w-full flex flex-col items-start justify-center gap-2 mb-6 text-center">
                             <h2 className="text-2xl md:text-3xl font-bold mb-2 font-title">Entrar em um Time</h2>
@@ -95,7 +95,7 @@ export default function PaginaUsuario() {
                             </div>
                         </form>
                     </SectionContainer>
-                </MainContainer>
+                </MainContainer> */}
             </div>
         </AuthGuard>
     );
