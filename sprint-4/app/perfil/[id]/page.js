@@ -1,7 +1,5 @@
 "use client";
 import Header from "@/app/Components/Header";
-import MainContainer from "@/app/Components/MainContainer";
-import SectionContainer from "@/app/Components/SectionContainer";
 import Input from "@/app/Components/Input";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -115,7 +113,7 @@ export default function Perfil() {
         <AuthGuard>
             <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-100">
                 <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-                <MainContainer>
+                {/* <MainContainer>
                     <SectionContainer tamanho={700}>
                         <div className="flex flex-col md:flex-row items-center md:items-start gap-8 w-full">
                             <div className="w-full md:w-1/3 flex flex-col gap-3 items-center bg-white rounded-2xl shadow-lg p-6 mb-6 md:mb-0">
@@ -171,7 +169,7 @@ export default function Perfil() {
                             </div>
                         </div>
                     </SectionContainer>
-                </MainContainer>
+                </MainContainer> */}
             </div>
         </AuthGuard>
     );

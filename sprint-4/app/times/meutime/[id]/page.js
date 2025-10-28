@@ -1,7 +1,5 @@
 "use client";
-import Header from "../../../Components/Header";
-import MainContainer from "../../../Components/MainContainer";
-import SectionContainer from "../../../Components/SectionContainer";
+import Header from "@/app/Components/Header";
 import VoltarButton from "../../../Components/VoltarButton";
 import JogadoraCard from "../../../Components/JogadoraCard";
 import Link from "next/link";

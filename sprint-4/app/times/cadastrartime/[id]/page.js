@@ -1,10 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import LoadingScreen from '../../../Components/LoadingScreen';
+import LoadingScreen from '@/app/Components/LoadingScreen';
 import AuthGuard from '../../../Components/AuthGuard';
-import Header from '../../../Components/Header';
-import MainContainer from '../../../Components/MainContainer';
-import SectionContainer from '../../../Components/SectionContainer';
+import Header from '@/app/Components/Header';
 import Input from '../../../Components/Input';
 import ColorInput from '../../../Components/ColorInput';
 import Link from 'next/link';
