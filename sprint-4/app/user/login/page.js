@@ -31,7 +31,7 @@ function Login() {
         return () => clearTimeout(timer);
     }, []);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setErro("");
         setSucesso("");
@@ -43,28 +43,45 @@ function Login() {
             return;
         }
 
-        // Simula uma chamada de API
-        setTimeout(() => {
-            const usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]");
-            if (!usuarios.length) {
-                setErro("Nenhum usuário cadastrado. Cadastre-se primeiro!");
+        try {
+            // Call MongoDB API
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, senha }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Handle error response
+                setErro(data.error || 'Email ou senha inválidos.');
                 setIsSubmitting(false);
                 return;
             }
 
-            const usuario = usuarios.find(u => u.email === email && u.senha === senha);
-            if (usuario) {
+            // Success! Save token and user ID
+            if (data.token && data.user) {
+                localStorage.setItem('auth_token', data.token);
+                localStorage.setItem('user_id', data.user.id);
                 setErro("");
                 setSucesso("Login realizado com sucesso! Redirecionando...");
-                // Redireciona após mostrar a mensagem de sucesso
+                
+                // Redirect after showing success message
                 setTimeout(() => {
-                    router.push(`/inicioposlogin/${usuario.id}`);
+                    router.push(`/inicioposlogin/${data.user.id}`);
                 }, 1000);
             } else {
-                setErro("Email ou senha inválidos.");
+                setErro("Erro ao processar resposta do servidor.");
                 setIsSubmitting(false);
             }
-        }, 1000); // Simula 1 segundo de espera para o login
+        } catch (error) {
+            console.error('Login error:', error);
+            setErro('Erro ao conectar com o servidor. Tente novamente.');
+            setIsSubmitting(false);
+        }
     };
 
     if (loading) {
