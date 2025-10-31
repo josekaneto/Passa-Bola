@@ -7,82 +7,303 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import VoltarButton from "@/app/Components/VoltarButton";
 
-const CART_STORAGE_KEY = "passa_bola_cart";
-
 export default function LojaPage() {
     const [loading, setLoading] = useState(true);
     const [cart, setCart] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [priceFilter, setPriceFilter] = useState("all");
+    const [userId, setUserId] = useState(null);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [produtos, setProdutos] = useState([]);
+    const [erro, setErro] = useState("");
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [productToDelete, setProductToDelete] = useState(null);
+    const [newProduct, setNewProduct] = useState({
+        nome: "",
+        preco: "",
+        imagem: "",
+        categoria: "",
+        descricao: "",
+        tamanhos: "",
+        estoque: "",
+        isFeatured: false,
+        isNew: false
+    });
     const router = useRouter();
 
-    const links = [
+    // Get user ID and admin status from localStorage or fetch from API
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const storedUserId = localStorage.getItem('user_id');
+            const token = localStorage.getItem('auth_token');
+            
+            if (storedUserId) {
+                setUserId(storedUserId);
+            }
+
+            if (token) {
+                try {
+                    const response = await fetch('/api/auth/me', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.user) {
+                        setUserId(data.user.id);
+                        // Check admin status from API or email
+                        const adminStatus = data.user.isAdmin || data.user.email === 'admin@gmail.com';
+                        console.log('Admin status:', adminStatus, 'User email:', data.user.email, 'isAdmin field:', data.user.isAdmin);
+                        setIsAdmin(adminStatus);
+                        localStorage.setItem('user_id', data.user.id);
+                    }
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            }
+        };
+
+        fetchUserData();
+    }, []);
+
+    // Fetch products from API
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setLoading(true);
+            setErro("");
+
+            try {
+                // Build query params for filtering
+                let queryParams = [];
+                if (priceFilter === "under100") {
+                    queryParams.push("maxPrice=99.99");
+                } else if (priceFilter === "100to200") {
+                    queryParams.push("minPrice=100", "maxPrice=199.99");
+                } else if (priceFilter === "over200") {
+                    queryParams.push("minPrice=200");
+                }
+                if (searchTerm) {
+                    queryParams.push(`search=${encodeURIComponent(searchTerm)}`);
+                }
+
+                const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
+                const response = await fetch(`/api/products${queryString}`);
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    setErro(data.error || 'Erro ao carregar produtos');
+                    setProdutos([]);
+                    setLoading(false);
+                    return;
+                }
+
+                setProdutos(data.products || []);
+            } catch (error) {
+                console.error('Fetch products error:', error);
+                setErro('Erro ao conectar com o servidor. Tente novamente.');
+                setProdutos([]);
+            } finally {
+                // Load cart from MongoDB if user is logged in
+                const token = localStorage.getItem('auth_token');
+                if (token) {
+                    try {
+                        const cartResponse = await fetch('/api/cart', {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        
+                        if (cartResponse.ok) {
+                            const cartData = await cartResponse.json();
+                            if (cartData.cart) {
+                                setCart(cartData.cart);
+                            }
+                        } else if (cartResponse.status === 401) {
+                            console.log('Token inválido - carrinho não será carregado');
+                            setCart([]);
+                        } else {
+                            console.error('Erro ao carregar carrinho:', cartResponse.status);
+                            setCart([]);
+                        }
+                    } catch (error) {
+                        console.error('Erro ao conectar com API do carrinho:', error);
+                        setCart([]);
+                    }
+                }
+                setLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, [searchTerm, priceFilter]);
+
+    // Determine header links based on login status
+    const links = userId ? [
+        { label: "Inicio", href: `/inicioposlogin/${userId}` },
+        { label: "Perfil", href: `/perfil/${userId}` },
+        { label: "Times", href: `/times/${userId}` },
+        { label: "Loja", href: `/loja/${userId}` },
+        { label: "Copas PAB", href: `/copasPab/${userId}` },
+        { label: "Sair", href: "/" }
+    ] : [
         { label: "Inicio", href: `/` },
         { label: "Copas PAB", href: `/copasPab` },
         { label: "Loja", href: `/loja` },
         { label: "Entrar", href: "/user/login" }
     ];
 
-    const produtos = [
-        { id: 1, nome: "Camisa Oficial PAB", preco: 129.90, imagem: "/camiseta.png", tamanhos: ['P', 'M', 'G', 'GG'] },
-        { id: 2, nome: "Chuteira Profissional", preco: 499.90, imagem: "/chuteira.avif", tamanhos: ['34', '35', '36', '37', '38', '39', '40', '41', '42'] },
-        { id: 3, nome: "Bola Oficial PAB", preco: 149.90, imagem: "/bola.png" },
-        { id: 4, nome: "Kit Treino Completo", preco: 199.90, imagem: "/kitTreinamento.jpeg" },
-        { id: 5, nome: "Meião Oficial PAB", preco: 39.90, imagem: "/meiao.png", tamanhos: ['P', 'M', 'G'] },
-        { id: 6, nome: "Luvas de Goleira", preco: 159.90, imagem: "/luva.png", tamanhos: ['P', 'M', 'G'] },
-        { id: 7, nome: "Mochila Esportiva PAB", preco: 119.90, imagem: "/mochila.png" },
-        { id: 8, nome: "Boné Oficial PAB", preco: 59.90, imagem: "/bone.png" },
-        { id: 9, nome: "Caneleiras de Proteção", preco: 49.90, imagem: "/caneleira.png", tamanhos: ['Infantil', 'Adulto'] },
-        { id: 10, nome: "Caneca Oficial PAB", preco: 19.90, imagem: "/caneca.png" },
-        { id: 11, nome: "Garrafa Térmica PAB", preco: 79.90, imagem: "/garrafa.png" },
-        { id: 12, nome: "Chaveiro Oficial PAB", preco: 9.90, imagem: "/chaveiro.png" },
-    ];
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            const savedCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
-            setCart(savedCart);
-            setLoading(false);
-        }, 1000); // Simula 2 segundos de carregamento
-
-        return () => clearTimeout(timer); // Limpa o timer se o componente for desmontado
-    }, []);
-
-    const addToCart = (produto, tamanho) => {
+    const addToCart = async (produto, tamanho) => {
         if (produto.tamanhos && !tamanho) {
             alert(`Por favor, selecione um tamanho para "${produto.nome}".`);
             return;
         }
 
-        const newCart = [...cart];
-        // Um item é único pela combinação de ID e tamanho
-        const cartItemId = tamanho ? `${produto.id}-${tamanho}` : produto.id;
-        const existingItem = newCart.find(item => item.cartItemId === cartItemId);
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                alert('Você precisa estar logado para adicionar itens ao carrinho.');
+                router.push('/user/login');
+                return;
+            }
 
-        if (existingItem) {
-            existingItem.quantidade += 1;
-        } else {
-            newCart.push({ ...produto, quantidade: 1, tamanho, cartItemId });
+            const response = await fetch('/api/cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    productId: produto.id,
+                    nome: produto.nome,
+                    preco: produto.preco,
+                    imagem: produto.imagem,
+                    tamanho: tamanho || null,
+                    quantidade: 1
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    alert('Sua sessão expirou. Por favor, faça login novamente.');
+                    router.push('/user/login');
+                    return;
+                }
+                alert(data.error || 'Erro ao adicionar item ao carrinho');
+                return;
+            }
+
+            setCart(data.cart || []);
+            alert('Item adicionado ao carrinho!');
+        } catch (error) {
+            console.error('Add to cart error:', error);
+            alert('Erro ao conectar com o servidor. Tente novamente.');
         }
-
-        setCart(newCart);
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(newCart));
     };
 
-    const filteredProducts = produtos.filter(produto => {
-        const matchesSearch = produto.nome.toLowerCase().includes(searchTerm.toLowerCase());
+    // Admin functions
+    const handleAddProduct = async (e) => {
+        e.preventDefault();
 
-        let matchesPrice = true;
-        if (priceFilter === "under100") {
-            matchesPrice = produto.preco < 100;
-        } else if (priceFilter === "100to200") {
-            matchesPrice = produto.preco >= 100 && produto.preco < 200;
-        } else if (priceFilter === "over200") {
-            matchesPrice = produto.preco >= 200;
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                alert('Você precisa estar logado.');
+                return;
+            }
+
+            // Parse tamanhos from string to array
+            const tamanhos = newProduct.tamanhos 
+                ? newProduct.tamanhos.split(',').map(t => t.trim()).filter(t => t.length > 0)
+                : [];
+
+            const response = await fetch('/api/admin/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    nome: newProduct.nome,
+                    preco: parseFloat(newProduct.preco),
+                    imagem: newProduct.imagem,
+                    categoria: newProduct.categoria,
+                    descricao: newProduct.descricao,
+                    tamanhos: tamanhos,
+                    estoque: parseInt(newProduct.estoque) || 0,
+                    isFeatured: newProduct.isFeatured,
+                    isNew: newProduct.isNew
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || 'Erro ao adicionar produto');
+                return;
+            }
+
+            alert('Produto adicionado com sucesso!');
+            setShowAddModal(false);
+            setNewProduct({
+                nome: "",
+                preco: "",
+                imagem: "",
+                categoria: "",
+                descricao: "",
+                tamanhos: "",
+                estoque: "",
+                isFeatured: false,
+                isNew: false
+            });
+            // Reload products
+            window.location.reload();
+        } catch (error) {
+            console.error('Add product error:', error);
+            alert('Erro ao conectar com o servidor. Tente novamente.');
         }
+    };
 
-        return matchesSearch && matchesPrice;
-    });
+    const handleDeleteProduct = async () => {
+        if (!productToDelete) return;
+
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                alert('Você precisa estar logado.');
+                return;
+            }
+
+            const response = await fetch(`/api/admin/products?id=${productToDelete.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || 'Erro ao remover produto');
+                return;
+            }
+
+            alert('Produto removido com sucesso!');
+            setShowDeleteModal(false);
+            setProductToDelete(null);
+            // Reload products
+            window.location.reload();
+        } catch (error) {
+            console.error('Delete product error:', error);
+            alert('Erro ao conectar com o servidor. Tente novamente.');
+        }
+    };
+
+    // Products are already filtered by the API, so we just use them directly
+    const filteredProducts = produtos;
 
     const cartItemCount = cart.reduce((sum, item) => sum + item.quantidade, 0);
 
@@ -105,11 +326,22 @@ export default function LojaPage() {
                 </div>
             </section>
 
-
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-2">
-                        <h1 className="text-4xl font-bold text-pink font-title">LOJA PAB</h1>
+                        <div className="flex items-center justify-between gap-4">
+                            <h1 className="text-4xl font-bold text-pink font-title">LOJA PAB</h1>
+                            {isAdmin && (
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setShowAddModal(true)}
+                                        className="px-6 py-2 bg-pink text-white rounded-lg font-semibold hover:bg-pink/90 transition-colors"
+                                    >
+                                        Adicionar Produto
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                         <div className="flex items-center justify-between gap-4">
                             <p className="text-lg text-gray-700">Equipamentos e produtos oficiais para seu time!</p>
                             <Link href="/carrinho" className="relative block">
@@ -122,7 +354,7 @@ export default function LojaPage() {
                             </Link>
                         </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-4 p-4 bg-white  rounded-lg">
+                    <div className="flex flex-col sm:flex-row gap-4 p-4 bg-white rounded-lg">
                         <div className="flex-1">
                             <input
                                 type="text"
@@ -145,29 +377,50 @@ export default function LojaPage() {
                             </select>
                         </div>
                     </div>
-                    {filteredProducts.length === 0 ? (
-                        <div className="text-center py-12">
-                            <p className="text-xl text-gray-500">Nenhum produto encontrado</p>
-                            <button
-                                onClick={() => { setSearchTerm(""); setPriceFilter("all"); }}
-                                className="mt-4 text-pink font-semibold hover:underline"
-                            >
-                                Limpar filtros
-                            </button>
+                    {erro && (
+                        <div className="text-center py-4">
+                            <p className="text-red-500 text-lg">{erro}</p>
                         </div>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredProducts.map(produto => (
-                                <ProductCard
-                                    key={produto.id}
-                                    nome={produto.nome}
-                                    preco={produto.preco}
-                                    imagem={produto.imagem}
-                                    tamanhos={produto.tamanhos} // Passe os tamanhos para o card
-                                    onAddToCart={(tamanho) => addToCart(produto, tamanho)} // A função agora espera um tamanho
-                                />
-                            ))}
-                        </div>
+                    )}
+                    {!loading && (
+                        <>
+                            {filteredProducts.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <p className="text-xl text-gray-500">Nenhum produto encontrado</p>
+                                    <button
+                                        onClick={() => { setSearchTerm(""); setPriceFilter("all"); }}
+                                        className="mt-4 text-pink font-semibold hover:underline"
+                                    >
+                                        Limpar filtros
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {filteredProducts.map(produto => (
+                                        <div key={produto.id} className="relative">
+                                            {isAdmin && (
+                                                <button
+                                                    onClick={() => {
+                                                        setProductToDelete(produto);
+                                                        setShowDeleteModal(true);
+                                                    }}
+                                                    className="absolute top-2 right-2 z-10 bg-red-500 text-white px-3 py-1 rounded-lg font-semibold hover:bg-red-600 transition-colors text-sm"
+                                                >
+                                                    Excluir
+                                                </button>
+                                            )}
+                                            <ProductCard
+                                                nome={produto.nome}
+                                                preco={produto.preco}
+                                                imagem={produto.imagem}
+                                                tamanhos={produto.tamanhos}
+                                                onAddToCart={(tamanho) => addToCart(produto, tamanho)}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </>
                     )}
                     {cart.length > 0 && (
                         <div className="mt-6 p-4 bg-green/20 rounded-lg">
@@ -178,6 +431,148 @@ export default function LojaPage() {
                     )}
                 </div>
             </div>
+
+            {/* Add Product Modal */}
+            {showAddModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-3xl font-bold text-pink font-title">Adicionar Produto</h2>
+                            <button
+                                onClick={() => setShowAddModal(false)}
+                                className="text-gray-500 hover:text-gray-700 text-2xl"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <form onSubmit={handleAddProduct} className="flex flex-col gap-4">
+                            <input
+                                type="text"
+                                placeholder="Nome do produto"
+                                value={newProduct.nome}
+                                onChange={(e) => setNewProduct({ ...newProduct, nome: e.target.value })}
+                                required
+                                className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-pink focus:outline-none"
+                            />
+                            <input
+                                type="number"
+                                step="0.01"
+                                placeholder="Preço (R$)"
+                                value={newProduct.preco}
+                                onChange={(e) => setNewProduct({ ...newProduct, preco: e.target.value })}
+                                required
+                                className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-pink focus:outline-none"
+                            />
+                            <input
+                                type="text"
+                                placeholder="URL da imagem"
+                                value={newProduct.imagem}
+                                onChange={(e) => setNewProduct({ ...newProduct, imagem: e.target.value })}
+                                required
+                                className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-pink focus:outline-none"
+                            />
+                            <select
+                                value={newProduct.categoria}
+                                onChange={(e) => setNewProduct({ ...newProduct, categoria: e.target.value })}
+                                required
+                                className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-pink focus:outline-none bg-white"
+                            >
+                                <option value="">Selecione a categoria</option>
+                                <option value="Camisas">Camisas</option>
+                                <option value="Chuteiras">Chuteiras</option>
+                                <option value="Equipamentos">Equipamentos</option>
+                                <option value="Acessórios">Acessórios</option>
+                                <option value="Lembranças">Lembranças</option>
+                            </select>
+                            <textarea
+                                placeholder="Descrição"
+                                value={newProduct.descricao}
+                                onChange={(e) => setNewProduct({ ...newProduct, descricao: e.target.value })}
+                                rows={3}
+                                className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-pink focus:outline-none"
+                            />
+                            <input
+                                type="text"
+                                placeholder="Tamanhos (separados por vírgula, ex: P,M,G,GG)"
+                                value={newProduct.tamanhos}
+                                onChange={(e) => setNewProduct({ ...newProduct, tamanhos: e.target.value })}
+                                className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-pink focus:outline-none"
+                            />
+                            <input
+                                type="number"
+                                placeholder="Estoque"
+                                value={newProduct.estoque}
+                                onChange={(e) => setNewProduct({ ...newProduct, estoque: e.target.value })}
+                                className="px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-pink focus:outline-none"
+                            />
+                            <div className="flex gap-4">
+                                <label className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={newProduct.isFeatured}
+                                        onChange={(e) => setNewProduct({ ...newProduct, isFeatured: e.target.checked })}
+                                        className="w-4 h-4"
+                                    />
+                                    <span>Destaque</span>
+                                </label>
+                                <label className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={newProduct.isNew}
+                                        onChange={(e) => setNewProduct({ ...newProduct, isNew: e.target.checked })}
+                                        className="w-4 h-4"
+                                    />
+                                    <span>Novo</span>
+                                </label>
+                            </div>
+                            <div className="flex gap-3 mt-4">
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-6 py-2 bg-pink text-white rounded-lg font-semibold hover:bg-pink/90 transition-colors"
+                                >
+                                    Adicionar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddModal(false)}
+                                    className="flex-1 px-6 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Product Modal */}
+            {showDeleteModal && productToDelete && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-8 max-w-md w-full">
+                        <h2 className="text-2xl font-bold text-red-600 font-title mb-4">Excluir Produto</h2>
+                        <p className="text-gray-700 mb-6">
+                            Tem certeza que deseja excluir o produto <strong>{productToDelete.nome}</strong>?
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleDeleteProduct}
+                                className="flex-1 px-6 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors"
+                            >
+                                Excluir
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setProductToDelete(null);
+                                }}
+                                className="flex-1 px-6 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }

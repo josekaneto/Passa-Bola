@@ -82,6 +82,12 @@ const userSchema = new mongoose.Schema({
     default: true
   },
   
+  // Admin
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
+  
   // Team Information
   teamId: {
     type: mongoose.Schema.Types.ObjectId,

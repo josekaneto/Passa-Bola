@@ -6,8 +6,6 @@ import LoadingScreen from "@/app/Components/LoadingScreen";
 import Link from "next/link";
 import VoltarButton from "../Components/VoltarButton";
 
-const CART_STORAGE_KEY = "passa_bola_cart";
-
 export default function CarrinhoPage() {
     const [loading, setLoading] = useState(true);
     const [cart, setCart] = useState([]);
@@ -25,42 +23,160 @@ export default function CarrinhoPage() {
     ];
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            const storedCart = localStorage.getItem(CART_STORAGE_KEY);
-            if (storedCart) {
-                setCart(JSON.parse(storedCart));
-            }
-            setLoading(false);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, []);
+        const fetchCart = async () => {
+            setLoading(true);
+            
+            try {
+                const token = localStorage.getItem('auth_token');
+                if (!token) {
+                    router.push('/user/login');
+                    return;
+                }
 
-    const updateCartInStorage = (newCart) => {
+                const response = await fetch('/api/cart', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('auth_token');
+                        localStorage.removeItem('user_id');
+                        router.push('/user/login');
+                        return;
+                    }
+                    alert(data.error || 'Erro ao carregar carrinho');
+                    setCart([]);
+                    setLoading(false);
+                    return;
+                }
+
+                setCart(data.cart || []);
+            } catch (error) {
+                console.error('Fetch cart error:', error);
+                alert('Erro ao carregar carrinho');
+                setCart([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCart();
+    }, [router]);
+
+    const updateCart = async (newCart) => {
         setCart(newCart);
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(newCart));
         // Recalcula o desconto se o carrinho mudar
         handleApplyCoupon(couponCode, newCart);
     };
 
-    const updateQuantity = (cartItemId, delta) => {
-        const newCart = cart.map(item => {
-            if (item.cartItemId === cartItemId) {
-                const newQuantidade = item.quantidade + delta;
-                return { ...item, quantidade: Math.max(0, newQuantidade) };
+    const updateQuantity = async (cartItemId, delta) => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                alert('Você precisa estar logado para atualizar o carrinho.');
+                return;
             }
-            return item;
-        }).filter(item => item.quantidade > 0);
 
-        updateCartInStorage(newCart);
+            const item = cart.find(item => item.cartItemId === cartItemId);
+            if (!item) return;
+
+            const newQuantidade = item.quantidade + delta;
+            
+            if (newQuantidade <= 0) {
+                // Remove item if quantity is 0 or less
+                await removeItem(cartItemId);
+                return;
+            }
+
+            const response = await fetch('/api/cart', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    cartItemId,
+                    quantidade: newQuantidade
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || 'Erro ao atualizar quantidade');
+                return;
+            }
+
+            await updateCart(data.cart || []);
+        } catch (error) {
+            console.error('Update quantity error:', error);
+            alert('Erro ao conectar com o servidor. Tente novamente.');
+        }
     };
 
-    const removeItem = (cartItemId) => {
-        const newCart = cart.filter(item => item.cartItemId !== cartItemId);
-        updateCartInStorage(newCart);
+    const removeItem = async (cartItemId) => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                alert('Você precisa estar logado para remover itens do carrinho.');
+                return;
+            }
+
+            const response = await fetch('/api/cart', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ cartItemId }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || 'Erro ao remover item');
+                return;
+            }
+
+            await updateCart(data.cart || []);
+        } catch (error) {
+            console.error('Remove item error:', error);
+            alert('Erro ao conectar com o servidor. Tente novamente.');
+        }
     };
 
-    const clearCart = () => {
-        updateCartInStorage([]);
+    const clearCart = async () => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                alert('Você precisa estar logado para limpar o carrinho.');
+                return;
+            }
+
+            const response = await fetch('/api/cart', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || 'Erro ao limpar carrinho');
+                return;
+            }
+
+            await updateCart([]);
+        } catch (error) {
+            console.error('Clear cart error:', error);
+            alert('Erro ao conectar com o servidor. Tente novamente.');
+        }
     };
 
     const handleApplyCoupon = (code, currentCart = cart) => {
@@ -76,8 +192,9 @@ export default function CarrinhoPage() {
         }
     };
 
-    const finalizarCompra = () => {
-        // Salva o total no localStorage para a página de pagamento usar
+    const finalizarCompra = async () => {
+        // Save cart and order summary temporarily for payment page
+        // The cart is stored in MongoDB, so we just pass the summary
         localStorage.setItem('order_summary', JSON.stringify({ subtotal, discount, total }));
         router.push("/pagamento");
     };

@@ -56,6 +56,9 @@ export async function POST(request) {
       { expiresIn: '7d' }
     );
 
+    // Determine admin status (check isAdmin field or email)
+    const isAdmin = user.isAdmin || user.email === 'admin@gmail.com';
+
     // Return success response (without password)
     return NextResponse.json({
       success: true,
@@ -67,7 +70,8 @@ export async function POST(request) {
         nomeCamisa: user.nomeCamisa,
         posicao: user.posicao,
         teamId: user.teamId,
-        isTeamCaptain: user.isTeamCaptain
+        isTeamCaptain: user.isTeamCaptain,
+        isAdmin: isAdmin
       },
       token
     }, { status: 200 });

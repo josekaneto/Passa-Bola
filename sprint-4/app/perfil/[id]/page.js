@@ -19,25 +19,90 @@ export default function Perfil() {
         { label: "Copas PAB", href: `/copasPab/${usuarioId}` },
         { label: "Sair", href: "/" }
     ];
-    const handleSave = (e) => {
-        e.preventDefault();
-        const usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]");
-        const idx = usuarios.findIndex(u => String(u.id) === String(usuarioId));
-        if (idx !== -1) {
-            usuarios[idx] = { ...usuarios[idx], ...usuario };
-            localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+    // Helper function to convert DD/MM/AAAA to YYYY-MM-DD for date input
+    const convertToDateInputFormat = (dateString) => {
+        if (!dateString) return "";
+        // Check if already in YYYY-MM-DD format
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+            return dateString;
         }
+        // Convert from DD/MM/AAAA to YYYY-MM-DD
+        const parts = dateString.split("/");
+        if (parts.length === 3) {
+            const [day, month, year] = parts;
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+        return dateString;
     };
 
-    useEffect(() => {
-        setLoading(true);
-        const usuarios = typeof window !== "undefined" ? localStorage.getItem("usuarios") : null;
-        if (!usuarios) {
-            router.replace("/");
-            return;
+    // Helper function to convert YYYY-MM-DD back to DD/MM/AAAA for storage
+    const convertToStorageFormat = (dateString) => {
+        if (!dateString) return "";
+        // Check if already in DD/MM/AAAA format
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+            return dateString;
         }
-        setLoading(false);
-    }, [router]);
+        // Convert from YYYY-MM-DD to DD/MM/AAAA
+        const parts = dateString.split("-");
+        if (parts.length === 3) {
+            const [year, month, day] = parts;
+            return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+        }
+        return dateString;
+    };
+    const handleSave = async (e) => {
+        e.preventDefault();
+        
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                alert('Você precisa estar logado para atualizar o perfil.');
+                return;
+            }
+
+            // Prepare update data (exclude senha as we don't update password here)
+            const updateData = { ...usuario };
+            delete updateData.senha;
+            // Convert date back to DD/MM/AAAA format for storage
+            if (updateData.dataNascimento) {
+                updateData.dataNascimento = convertToStorageFormat(updateData.dataNascimento);
+            }
+            if (fotoPerfil && fotoPerfil !== "/fotoDePerfil.png") {
+                updateData.avatar = fotoPerfil;
+            }
+
+            const response = await fetch('/api/auth/me', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(updateData),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || 'Erro ao atualizar perfil');
+                return;
+            }
+
+            alert('Perfil atualizado com sucesso!');
+            if (data.user) {
+                setUsuario({
+                    ...data.user,
+                    senha: "" // Keep senha field empty in state
+                });
+                if (data.user.avatar) {
+                    setFotoPerfil(data.user.avatar);
+                }
+            }
+        } catch (error) {
+            console.error('Save error:', error);
+            alert('Erro ao conectar com o servidor. Tente novamente.');
+        }
+    };
 
     // Campos do cadastro
     const [usuario, setUsuario] = useState({
@@ -55,29 +120,72 @@ export default function Perfil() {
     });
 
     const [nomeTime, setNomeTime] = useState("");
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    
     useEffect(() => {
-        const usuarios = JSON.parse(localStorage.getItem("usuarios") || "[]");
-        const user = usuarios.find(u => String(u.id) === String(usuarioId));
-        if (user) {
-            setUsuario({
-                nomeCompleto: user.nomeCompleto || "",
-                dataNascimento: user.dataNascimento || "",
-                email: user.email || "",
-                telefone: user.telefone || "",
-                nomeCamisa: user.nomeCamisa || "",
-                numeroCamisa: user.numeroCamisa || "",
-                altura: user.altura || "",
-                peso: user.peso || "",
-                posicao: user.posicao || "",
-                pernaDominante: user.pernaDominante || "",
-                senha: user.senha || ""
-            });
-        }
-        // Busca nome do time do usuário
-        const times = JSON.parse(localStorage.getItem("times") || "[]");
-        const meuTime = times.find(t => String(t.id) === String(usuarioId));
-        setNomeTime(meuTime?.nome || "Você ainda não tem um time");
-    }, [usuarioId]);
+        const fetchUserData = async () => {
+            setLoading(true);
+            
+            try {
+                const token = localStorage.getItem('auth_token');
+                if (!token) {
+                    router.replace("/user/login");
+                    return;
+                }
+
+                const response = await fetch('/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('auth_token');
+                        localStorage.removeItem('user_id');
+                        router.replace("/user/login");
+                        return;
+                    }
+                    alert(data.error || 'Erro ao carregar perfil');
+                    setLoading(false);
+                    return;
+                }
+
+                if (data.user) {
+                    setUsuario({
+                        nomeCompleto: data.user.nomeCompleto || "",
+                        dataNascimento: convertToDateInputFormat(data.user.dataNascimento || ""),
+                        email: data.user.email || "",
+                        telefone: data.user.telefone || "",
+                        nomeCamisa: data.user.nomeCamisa || "",
+                        numeroCamisa: data.user.numeroCamisa || "",
+                        altura: data.user.altura || "",
+                        peso: data.user.peso || "",
+                        posicao: data.user.posicao || "",
+                        pernaDominante: data.user.pernaDominante || "",
+                        senha: "" // Password is not returned from API
+                    });
+
+                    if (data.user.avatar) {
+                        setFotoPerfil(data.user.avatar);
+                    }
+
+                    // TODO: Fetch team name from team API when available
+                    setNomeTime("Você ainda não tem um time");
+                }
+
+                setLoading(false);
+            } catch (error) {
+                console.error('Fetch user error:', error);
+                alert('Erro ao carregar perfil');
+                setLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [router, usuarioId]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -85,12 +193,7 @@ export default function Perfil() {
     }
 
     // Estado para imagem de perfil
-    const [fotoPerfil, setFotoPerfil] = useState(() => {
-        if (typeof window !== "undefined") {
-            return localStorage.getItem("fotoPerfil") || "/fotoDePerfil.png";
-        }
-        return "/fotoDePerfil.png";
-    });
+    const [fotoPerfil, setFotoPerfil] = useState("/fotoDePerfil.png");
 
     const handleFotoChange = (e) => {
         const file = e.target.files[0];
@@ -98,11 +201,42 @@ export default function Perfil() {
             const reader = new FileReader();
             reader.onloadend = () => {
                 setFotoPerfil(reader.result);
-                if (typeof window !== "undefined") {
-                    localStorage.setItem("fotoPerfil", reader.result);
-                }
             };
             reader.readAsDataURL(file);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        try {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                alert('Você precisa estar logado.');
+                return;
+            }
+
+            const response = await fetch('/api/auth/delete-account', {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || 'Erro ao excluir conta');
+                return;
+            }
+
+            // Clear localStorage and redirect to login
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_id');
+            
+            alert('Conta excluída com sucesso!');
+            router.push('/user/login');
+        } catch (error) {
+            console.error('Delete account error:', error);
+            alert('Erro ao conectar com o servidor. Tente novamente.');
         }
     };
 
@@ -113,8 +247,8 @@ export default function Perfil() {
         <AuthGuard>
             <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-100">
                 <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-                {/* <MainContainer>
-                    <SectionContainer tamanho={700}>
+                <div className="w-full max-w-7xl mx-auto px-4 py-8">
+                    <div className="max-w-[700px] mx-auto">
                         <div className="flex flex-col md:flex-row items-center md:items-start gap-8 w-full">
                             <div className="w-full md:w-1/3 flex flex-col gap-3 items-center bg-white rounded-2xl shadow-lg p-6 mb-6 md:mb-0">
                                 <div className="w-full flex justify-start mb-4">
@@ -135,6 +269,12 @@ export default function Perfil() {
                                     <span className="block text-center mt-2 text-sm text-gray-500 hover:text-purple transition">Selecionar a Imagem</span>
                                 </label>
                                 <button className="bg-purple hover:bg-purple-700 transition text-white rounded-lg px-6 py-2 font-bold shadow-md mt-2 mb-4 w-full" onClick={handleSave}>Salvar</button>
+                                <button 
+                                    className="bg-red-500 hover:bg-red-600 transition text-white rounded-lg px-6 py-2 font-bold shadow-md mt-2 mb-4 w-full" 
+                                    onClick={() => setShowDeleteModal(true)}
+                                >
+                                    Excluir Conta
+                                </button>
                             </div>
                             <div className="w-full md:w-2/3 flex flex-col md:text-left text-center gap-5">
                                 <form className="w-full" action="">
@@ -168,9 +308,35 @@ export default function Perfil() {
                                 </form>
                             </div>
                         </div>
-                    </SectionContainer>
-                </MainContainer> */}
+                    </div>
+                </div>
+
+                {/* Delete Account Confirmation Modal */}
+                {showDeleteModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-xl p-8 max-w-md w-full">
+                            <h2 className="text-2xl font-bold text-red-600 font-title mb-4">Excluir Conta</h2>
+                            <p className="text-gray-700 mb-6">
+                                Tem certeza que deseja excluir sua conta? Esta ação <strong>não pode ser desfeita</strong> e todos os seus dados serão permanentemente removidos.
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handleDeleteAccount}
+                                    className="flex-1 px-6 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors"
+                                >
+                                    Confirmar Exclusão
+                                </button>
+                                <button
+                                    onClick={() => setShowDeleteModal(false)}
+                                    className="flex-1 px-6 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </AuthGuard>
     );
-    }
+}
