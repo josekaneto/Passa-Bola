@@ -140,14 +140,7 @@ export default function LojaPage() {
     }, [searchTerm, priceFilter]);
 
     // Determine header links based on login status
-    const links = userId ? [
-        { label: "Inicio", href: `/inicioposlogin/${userId}` },
-        { label: "Perfil", href: `/perfil/${userId}` },
-        { label: "Times", href: `/times/${userId}` },
-        { label: "Loja", href: `/loja/${userId}` },
-        { label: "Copas PAB", href: `/copasPab/${userId}` },
-        { label: "Sair", href: "/" }
-    ] : [
+    const links = [
         { label: "Inicio", href: `/` },
         { label: "Copas PAB", href: `/copasPab` },
         { label: "Loja", href: `/loja` },
