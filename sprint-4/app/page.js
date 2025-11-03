@@ -52,14 +52,12 @@ export default function Home() {
           <span className="bg-pink text-white px-3 py-1 rounded-full mb-4 text-sm font-semibold" data-aos="fade-right" data-aos-delay="200">
             Passa Bola
           </span>
-          <h1 className="text-4xl sm:text-5xl font-bold font-title text-white mb-6 w-full md:w-full" data-aos="fade-right" data-aos-delay="400">
+          <h1 className="text-4xl sm:text-5xl font-bold font-title text-white mb-6 w-full md:w-1/2" data-aos="fade-right" data-aos-delay="400">
             ELAS NO COMANDO: O FUTURO DO FUTEBOL COMEÇA AQUI
           </h1>
           <p className="text-base sm:text-lg text-white w-full sm:w-4/5 md:w-7/12" data-aos="fade-right" data-aos-delay="600">
-            Uma Copa que celebra a garra, o talento e a união das mulheres no futebol.
-            Mais do que partidas, vivemos histórias de superação, força e conquista.
-            Cada jogo é um símbolo de resistência, e cada vitória coletiva ou individual é um passo rumo à igualdade, à inspiração e a um novo capítulo no esporte.
-          </p>
+            Passa Bola conecta, promove e dá voz ao futebol feminino no Brasil. Produzimos conteúdo e eventos que geram oportunidades para atletas, clubes e torcedores.
+        </p>
           <Link
             href="/copasPab"
             className="mt-6 bg-purple text-white font-semibold px-5 py-3 rounded-xl hover:scale-105 duration-500 transition-transform"
@@ -87,14 +85,14 @@ export default function Home() {
           </p>
 
           <ProfileSection
-            src="luana.jpg"
+            src="/luana.jpg"
             alt="Luana Maluf"
             text="Luana Maluf é uma das principais vozes femininas do jornalismo esportivo brasileiro. Com uma carreira marcada por dedicação, carisma e conhecimento, Luana se destaca na cobertura de futebol, trazendo análises precisas e uma abordagem inspiradora sobre o protagonismo das mulheres no esporte. Sua presença nos campos e transmissões é sinônimo de credibilidade e paixão pelo futebol."
             reverse
           />
 
           <ProfileSection
-            src="ale.jpeg"
+            src="/ale.jpeg"
             alt="Ale Xavier"
             text="Ale Xavier é referência quando o assunto é futebol e representatividade feminina na mídia esportiva. Comunicadora nata, Ale conquistou o público com seu jeito autêntico, didático e engajado, tornando-se uma das principais influenciadoras do segmento. Sua trajetória inspira novas gerações de mulheres a ocuparem espaços de destaque no esporte brasileiro. Além disso, Ale é reconhecida por sua atuação em projetos sociais ligados ao futebol e por incentivar o debate sobre igualdade de gênero no esporte. Sua voz é símbolo de transformação e inspiração."
           />

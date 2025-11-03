@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import VoltarButton from "../../Components/VoltarButton";
 import Input from "../../Components/Input";
 import { useRouter } from "next/navigation";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function CadastreSe() {
     const router = useRouter();
@@ -22,6 +23,8 @@ function CadastreSe() {
     });
     const [erro, setErro] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -95,8 +98,18 @@ function CadastreSe() {
                         <Input name="altura" type="number" placeholder="Altura (cm)" value={form.altura} onChange={handleChange} required disabled={isSubmitting} />
                         <Input name="peso" type="number" placeholder="Peso (kg)" value={form.peso} onChange={handleChange} required disabled={isSubmitting} />
                         <Input name="pernaDominante" type="text" placeholder="Perna dominante" value={form.pernaDominante} onChange={handleChange} required disabled={isSubmitting} />
-                        <Input name="senha" type="password" placeholder="Senha" value={form.senha} onChange={handleChange} required disabled={isSubmitting} />
-                        <Input name="confirmacaoSenha" type="password" placeholder="Confirmação de senha" value={form.confirmacaoSenha} onChange={handleChange} required disabled={isSubmitting} />
+                        <div className="relative">
+                            <Input name="senha" type={showPassword ? "text" : "password"} placeholder="Senha" value={form.senha} onChange={handleChange} required disabled={isSubmitting} />
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-lg text-gray-600 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                            </div>
+                        </div>
+                        <div className="relative">
+                            <Input name="confirmacaoSenha" type={showConfirmPassword ? "text" : "password"} placeholder="Confirmação de senha" value={form.confirmacaoSenha} onChange={handleChange} required disabled={isSubmitting} />
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-lg text-gray-600 cursor-pointer" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                            </div>
+                        </div>
                     </div>
                     <button className={`bg-pink-500 text-white text-center py-3 rounded-lg font-bold w-full text-lg hover:border-green border cursor-pointer ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`} type="submit" data-aos="zoom-in" data-aos-delay="400" disabled={isSubmitting}>
                         {isSubmitting ? 'Criando...' : 'Criar'}
