@@ -85,14 +85,14 @@ export default function Home() {
           </p>
 
           <ProfileSection
-            src="/luana.jpg"
+            src="/Luana.jpg"
             alt="Luana Maluf"
             text="Luana Maluf é uma das principais vozes femininas do jornalismo esportivo brasileiro. Com uma carreira marcada por dedicação, carisma e conhecimento, Luana se destaca na cobertura de futebol, trazendo análises precisas e uma abordagem inspiradora sobre o protagonismo das mulheres no esporte. Sua presença nos campos e transmissões é sinônimo de credibilidade e paixão pelo futebol."
             reverse
           />
 
           <ProfileSection
-            src="/ale.jpeg"
+            src="/Ale.jpeg"
             alt="Ale Xavier"
             text="Ale Xavier é referência quando o assunto é futebol e representatividade feminina na mídia esportiva. Comunicadora nata, Ale conquistou o público com seu jeito autêntico, didático e engajado, tornando-se uma das principais influenciadoras do segmento. Sua trajetória inspira novas gerações de mulheres a ocuparem espaços de destaque no esporte brasileiro. Além disso, Ale é reconhecida por sua atuação em projetos sociais ligados ao futebol e por incentivar o debate sobre igualdade de gênero no esporte. Sua voz é símbolo de transformação e inspiração."
           />
