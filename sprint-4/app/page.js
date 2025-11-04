@@ -3,8 +3,6 @@ import Link from "next/link";
 import Header from "./Components/Header";
 import ProfileSection from "./Components/ProfileSection";
 import { useEffect, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import ContactSection from "./Components/ContactSection";
 import SectionCopa from "./Components/SectionCopa";
 import "swiper/css";

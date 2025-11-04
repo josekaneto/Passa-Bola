@@ -4,17 +4,28 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import LoadingScreen from "../../Components/LoadingScreen";
 import AuthGuard from "../../Components/AuthGuard";
+import { useRouter } from "next/navigation";
 
 export default function PaginaUsuario() {
     const [loading, setLoading] = useState(true);
     const { id: usuarioId } = useParams();
+    const router = useRouter();
+
+    const handleLogout = () => {
+        // Remove o token de autenticação do localStorage
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_id');
+         // Redireciona para a página inicial
+        router.push('/');
+    };
+    
     const links = [
         { label: "Inicio", href: `/inicioposlogin/${usuarioId}` },
         { label: "Perfil", href: `/perfil/${usuarioId}` },
         { label: "Times", href: `/times/${usuarioId}` },
         { label: "Loja", href: `/loja/${usuarioId}` },
         { label: "Copas PAB", href: "/copasPab" },
-        { label: "Sair", href: "/" }
+        { label: "Sair", href: "/" , onClick: handleLogout }
     ];
     useEffect(() => {
         setLoading(true);

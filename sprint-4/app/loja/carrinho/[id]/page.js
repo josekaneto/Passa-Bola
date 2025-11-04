@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import Link from "next/link";
-import VoltarButton from "../Components/VoltarButton";
+import VoltarButton from "@/app/Components/VoltarButton";
 
 export default function CarrinhoPage() {
     const [loading, setLoading] = useState(true);
