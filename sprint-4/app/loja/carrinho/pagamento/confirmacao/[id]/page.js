@@ -1,56 +1,62 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react"; // 1. Importar useRef
 import { useRouter } from "next/navigation";
 import Header from "@/app/Components/Header";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import Link from "next/link";
 
-const CART_STORAGE_KEY = "passa_bola_cart";
-
 export default function ConfirmacaoPage() {
     const [loading, setLoading] = useState(true);
     const [order, setOrder] = useState(null);
+    const [userId, setUserId] = useState(null);
     const router = useRouter();
-    const effectRan = useRef(false);
+    const effectRan = useRef(false); // 2. Criar a referência para controle
 
-    const links = [
-        { label: "Inicio", href: `/` },
-        { label: "Copas PAB", href: `/copasPab` },
-        { label: "Loja", href: `/loja` },
-        { label: "Entrar", href: "/user/login" }
-    ];
+    const links = userId ? [
+        { label: "Inicio", href: `/inicioposlogin/${userId}` },
+        { label: "Perfil", href: `/perfil/${userId}` },
+        { label: "Times", href: `/times/${userId}` },
+        { label: "Copas PAB", href: `/copasPab/${userId}` },
+        { label: "Loja", href: `/loja/${userId}` }
+    ] : [];
 
     useEffect(() => {
-        if (effectRan.current === false) {
-            // Lê os dados do localStorage uma única vez.
-            const summary = JSON.parse(localStorage.getItem('order_summary') || "null");
-            const storedCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
-
-            // Limpa o localStorage imediatamente após a leitura.
-            localStorage.removeItem(CART_STORAGE_KEY);
-            localStorage.removeItem('order_summary');
-
-            if (!summary || storedCart.length === 0) {
-                router.push('/loja'); // Se não houver dados, redireciona.
-                return;
-            }
-
-            // Define o estado com os dados que foram lidos.
-            setOrder({
-                id: Math.random().toString(36).substr(2, 9).toUpperCase(),
-                summary,
-                cart: storedCart
-            });
-            
-            setLoading(false);
-
-            // Marca que o efeito já rodou.
-            effectRan.current = true;
+        // 3. Lógica de controle para garantir execução única
+        if (effectRan.current === true) {
+            return;
         }
-    }, [router]);
+        effectRan.current = true;
 
-    if (loading || !order) {
+        const token = localStorage.getItem('auth_token');
+        const userIdFromStorage = localStorage.getItem('user_id');
+
+        if (!token || !userIdFromStorage) {
+            router.push('/user/login');
+            return;
+        }
+
+        setUserId(userIdFromStorage);
+
+        const finalizedOrderData = JSON.parse(localStorage.getItem('finalized_order') || "null");
+
+        if (!finalizedOrderData) {
+            router.push(`/loja/${userIdFromStorage}`);
+            return;
+        }
+
+        setOrder(finalizedOrderData);
+        setLoading(false);
+
+        localStorage.removeItem('finalized_order');
+
+    }, [router]); // 4. Dependência simplificada
+
+    if (loading) {
         return <LoadingScreen />;
+    }
+
+    if (!order) {
+        return null; // Renderiza nada enquanto redireciona, se necessário
     }
 
     return (
@@ -87,12 +93,12 @@ export default function ConfirmacaoPage() {
                     <h1 className="text-4xl font-bold text-green-600 font-title">Compra Realizada com Sucesso!</h1>
                     <p className="mt-2 text-lg text-gray-600">Obrigado por comprar na Loja PAB!</p>
                     <p className="mt-4 font-semibold text-gray-800">Seu pedido <span className="text-pink">{order.id}</span> foi confirmado.</p>
-                    
+
                     <div className="text-left mt-8 border-t pt-6">
                         <h2 className="text-xl font-bold text-black mb-4">Resumo da Compra</h2>
                         <div className="flex flex-col gap-2 mb-4">
                             {order.cart.map(item => (
-                                <div key={item.cartItemId} className="flex justify-between text-gray-700">
+                                <div key={item.cartItemId || item.id} className="flex justify-between text-gray-700">
                                     <span>{item.quantidade}x {item.nome} {item.tamanho ? `(${item.tamanho})` : ''}</span>
                                     <span className="font-semibold">R$ {(item.preco * item.quantidade).toFixed(2)}</span>
                                 </div>
@@ -105,7 +111,7 @@ export default function ConfirmacaoPage() {
                         </div>
                     </div>
 
-                    <Link href="/loja" className="inline-block mt-8 bg-pink text-white font-bold py-3 px-8 rounded-lg shadow hover:bg-purple transition-colors">
+                    <Link href={`/loja/${userId}`} className="inline-block mt-8 bg-pink text-white font-bold py-3 px-8 rounded-lg shadow hover:bg-purple transition-colors">
                         VOLTAR PARA A LOJA
                     </Link>
                 </div>

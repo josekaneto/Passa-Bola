@@ -5,14 +5,16 @@ import JogadoraCard from "../../../Components/JogadoraCard";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import MainContainer from "@/app/Components/MainContainer";
+import SectionContainer from "@/app/Components/SectionContainer";
 
 export default function MeuTime() {
 	const { id } = useParams();
 	const router = useRouter();
 	// Proteção de rota: redireciona se não estiver logado
 	useEffect(() => {
-	const usuarios = typeof window !== "undefined" ? localStorage.getItem("usuarios") : null;
-	if (!usuarios) {
+	const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+	if (!authToken) {
 			router.replace("/");
 		}
 	}, [router]);
@@ -54,7 +56,7 @@ export default function MeuTime() {
 	return (
         <>
         <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-		{/* <MainContainer>
+		<MainContainer>
 			<SectionContainer tamanho={800}>
                 <div className="w-full flex justify-end mb-4">
                     <VoltarButton onClick={() => router.push(`/times/${id}`)} />
@@ -101,7 +103,7 @@ export default function MeuTime() {
 					</div>
 				</div>
 			</SectionContainer>
-		</MainContainer> */}
+		</MainContainer>
         </>
 	);
 }

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/app/Components/Header";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import Link from "next/link";
+import CustomAlert from "@/app/Components/CustomAlert"; // 1. Importar o CustomAlert
 
 const CART_STORAGE_KEY = "passa_bola_cart";
 
@@ -12,21 +13,36 @@ export default function PagamentoPage() {
     const [paymentMethod, setPaymentMethod] = useState("creditCard");
     const [orderSummary, setOrderSummary] = useState(null);
     const [cart, setCart] = useState([]);
+    const [userId, setUserId] = useState(null);
+    const [alertInfo, setAlertInfo] = useState({ show: false, message: '', type: 'info' }); // 2. Adicionar estado para o alerta
     const router = useRouter();
 
-    const links = [
-        { label: "Inicio", href: `/` },
-        { label: "Copas PAB", href: `/copasPab` },
-        { label: "Loja", href: `/loja` },
-        { label: "Entrar", href: "/user/login" }
-    ];
+    // Tornar os links dinâmicos com base no userId
+    const links =  [
+        { label: "Inicio", href: `/inicioposlogin/${userId}` },
+        { label: "Perfil", href: `/perfil/${userId}` },
+        { label: "Times", href: `/times/${userId}` },
+        { label: "Copas PAB", href: `/copasPab/${userId}` },
+        { label: "Loja", href: `/loja/${userId}` }
+    ]
 
     useEffect(() => {
+        const token = localStorage.getItem('auth_token');
+        const userIdFromStorage = localStorage.getItem('user_id'); // Obter o userId
+
+        if (!token || !userIdFromStorage) {
+            router.push('/user/login');
+            return;
+        }
+
+        setUserId(userIdFromStorage); // Definir o userId no estado
+
         const summary = JSON.parse(localStorage.getItem('order_summary') || "null");
         const storedCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
 
-        if (!summary || storedCart.length === 0) {
-            router.push('/carrinho'); // Redireciona se não houver dados
+        if (!summary) {
+            // Redireciona para o carrinho correto do usuário
+            router.push(`/loja/carrinho/${userIdFromStorage}`); 
             return;
         }
         
@@ -35,19 +51,61 @@ export default function PagamentoPage() {
         setLoading(false);
     }, [router]);
 
-    const handleFinalizePayment = (e) => {
-        e.preventDefault();
-        // Aqui iria a lógica de validação e envio para um gateway de pagamento
-        alert("Pagamento processado com sucesso!");
-        router.push("/confirmacao");
+    // 3. Adicionar função para mostrar o alerta
+    const showAlert = (message, type = 'success') => {
+        setAlertInfo({ show: true, message, type });
     };
 
-    if (loading || !orderSummary) {
+    const handleFinalizePayment = async (e) => {
+        e.preventDefault();
+        
+        const orderData = {
+            id: Math.random().toString(36).substr(2, 9).toUpperCase(),
+            summary: orderSummary,
+            cart: cart
+        };
+
+        localStorage.setItem('finalized_order', JSON.stringify(orderData));
+        
+        // 1. Limpar o carrinho no SERVIDOR
+        try {
+            const token = localStorage.getItem('auth_token');
+            await fetch('/api/cart', {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+        } catch (error) {
+            console.error("Falha ao limpar o carrinho no servidor:", error);
+            // Mesmo que a limpeza falhe, o usuário deve ver a confirmação.
+            // O carrinho pode ser limpo manualmente depois.
+        }
+
+        // 2. Limpar o localStorage local
+        localStorage.removeItem(CART_STORAGE_KEY);
+        localStorage.removeItem('order_summary');
+
+        showAlert("Pagamento efetuado com sucesso", "success");
+        
+        setTimeout(() => {
+            router.push(`/loja/carrinho/pagamento/confirmacao/${userId}`);
+        }, 2000);
+    };
+
+    if (loading) {
         return <LoadingScreen />;
     }
 
     return (
         <main className="bg-gray-50 min-h-screen">
+            {/* 5. Renderizar o CustomAlert */}
+            <CustomAlert
+                show={alertInfo.show}
+                message={alertInfo.message}
+                type={alertInfo.type}
+                onClose={() => setAlertInfo({ show: false, message: '', type: 'info' })}
+            />
             <Header links={links} bgClass="bg-white" src="/Logo-Preta.png" color="text-black" />
 
             {/* Indicador de Progresso */}
@@ -143,7 +201,8 @@ export default function PagamentoPage() {
                                 <div className="flex justify-between items-center text-2xl font-bold"><span className="text-black font-title">TOTAL</span><span className="text-pink">R$ {orderSummary.total.toFixed(2)}</span></div>
                             </div>
                             <button type="submit" className="mt-6 w-full bg-green text-white font-bold py-3 rounded-lg shadow hover:bg-green/80">FINALIZAR PAGAMENTO</button>
-                            <Link href="/carrinho" className="block text-center mt-4 text-sm text-gray-500 hover:text-pink">Voltar para o carrinho</Link>
+                            {/* Atualizar link para voltar ao carrinho do usuário */}
+                            <Link href={`/loja/carrinho/${userId}`} className="block text-center mt-4 text-sm text-gray-500 hover:text-pink">Voltar para o carrinho</Link>
                         </div>
                     </div>
                 </form>

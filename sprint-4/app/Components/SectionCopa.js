@@ -24,7 +24,7 @@ export default function SectionCopa() {
                 </p>
 
                 <Link
-                    href="/user/cadastro"
+                    href="/user/login"
                     role="button"
                     aria-label="Inscreva-se na Copa Passa Bola 2025"
                     className="inline-flex items-center justify-center mt-8 bg-green text-black font-bold rounded-md px-6 py-3 shadow-md hover:scale-105 transition-transform duration-500"

@@ -6,6 +6,10 @@ import Link from "next/link";
 import AuthGuard from "@/app/Components/AuthGuard";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import Header from "@/app/Components/Header";
+import MainContainer from "@/app/Components/MainContainer";
+import SectionContainer from "@/app/Components/SectionContainer";
+import VoltarButton from "@/app/Components/VoltarButton";
+import Input from "@/app/Components/Input";
 
 
 export default function ConvidarJogadoras() {
@@ -25,8 +29,8 @@ export default function ConvidarJogadoras() {
 
     useEffect(() => {
         setLoading(true);
-    const usuarios = typeof window !== "undefined" ? localStorage.getItem("usuarios") : null;
-    if (!usuarios) {
+    const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    if (!authToken) {
             router.replace("/");
             return;
         }
@@ -66,7 +70,7 @@ export default function ConvidarJogadoras() {
     return (
         <AuthGuard>
             <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-            {/* <MainContainer classeAdicional="md:py-10">
+            <MainContainer classeAdicional="md:py-10">
                 <SectionContainer tamanho={650}>
                     <div className="h-full min-h-screen sm:min-h-0 sm:h-auto flex flex-col justify-between">
                         <div className="w-full flex justify-end mb-2">
@@ -123,7 +127,7 @@ export default function ConvidarJogadoras() {
                         </div>
                     </div>
                 </SectionContainer>
-            </MainContainer> */}
+            </MainContainer>
         </AuthGuard>
     );
 }

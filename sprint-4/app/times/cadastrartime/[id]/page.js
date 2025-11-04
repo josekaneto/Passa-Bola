@@ -8,6 +8,8 @@ import ColorInput from '../../../Components/ColorInput';
 import Link from 'next/link';
 import VoltarButton from '../../../Components/VoltarButton';
 import { useParams, useRouter } from 'next/navigation';
+import MainContainer from '@/app/Components/MainContainer';
+import SectionContainer from '@/app/Components/SectionContainer';
 
 
 export default function CadastrarTime() {
@@ -63,8 +65,8 @@ export default function CadastrarTime() {
 
     useEffect(() => {
         setLoading(true);
-        const usuarios = typeof window !== "undefined" ? localStorage.getItem("usuarios") : null;
-        if (!usuarios) {
+        const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+        if (!authToken) {
             router.replace("/");
             return;
         }
@@ -84,7 +86,7 @@ export default function CadastrarTime() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-pink-50">
             <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-            {/* <MainContainer>
+            <MainContainer>
                 <SectionContainer tamanho={700}>
                     <div className="mb-6">
                         <div className="w-full flex justify-end">
@@ -149,7 +151,7 @@ export default function CadastrarTime() {
                         </form>
                     </div>
                 </SectionContainer>
-            </MainContainer> */}
+            </MainContainer>
         </div>
     );
 }

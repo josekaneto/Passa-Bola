@@ -9,8 +9,10 @@ import CustomAlert from "@/app/Components/CustomAlert";
 
 export default function LojaPage() {
     const [loading, setLoading] = useState(true);
+    const [isInitialLoad, setIsInitialLoad] = useState(true); // 1. Adicionar estado
     const [cart, setCart] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // 2. Adicionar estado
     const [priceFilter, setPriceFilter] = useState("all");
     const [userId, setUserId] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false);
@@ -37,13 +39,17 @@ export default function LojaPage() {
         setAlertInfo({ show: true, message, type });
     };
 
-    const handleLogout = () => {
-        // Remove o token de autenticação do localStorage
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_id');
-        // Redireciona para a página inicial
-        router.push('/');
-    };
+    // 3. Adicionar useEffect para o debouncing
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 500); // Aguarda 500ms após o usuário parar de digitar
+
+        // Limpa o timeout se o usuário digitar novamente
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchTerm]);
 
     // Get user ID and admin status from localStorage or fetch from API
     useEffect(() => {
@@ -83,7 +89,9 @@ export default function LojaPage() {
     // Fetch products from API
     useEffect(() => {
         const fetchProducts = async () => {
-            setLoading(true);
+            if (isInitialLoad) {
+                setLoading(true);
+            }
             setErro("");
 
             try {
@@ -96,8 +104,8 @@ export default function LojaPage() {
                 } else if (priceFilter === "over200") {
                     queryParams.push("minPrice=200");
                 }
-                if (searchTerm) {
-                    queryParams.push(`search=${encodeURIComponent(searchTerm)}`);
+                if (debouncedSearchTerm) { // 4. Usar o estado debounced
+                    queryParams.push(`search=${encodeURIComponent(debouncedSearchTerm)}`);
                 }
 
                 const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
@@ -118,6 +126,8 @@ export default function LojaPage() {
                 setErro('Erro ao conectar com o servidor. Tente novamente.');
                 setProdutos([]);
             } finally {
+                setLoading(false);
+                setIsInitialLoad(false); // Marcar que o carregamento inicial terminou
                 // Load cart from MongoDB if user is logged in
                 const token = localStorage.getItem('auth_token');
                 if (token) {
@@ -145,12 +155,11 @@ export default function LojaPage() {
                         setCart([]);
                     }
                 }
-                setLoading(false);
             }
         };
 
         fetchProducts();
-    }, [searchTerm, priceFilter]);
+    }, [debouncedSearchTerm, priceFilter, isInitialLoad]); // 5. Atualizar dependências
 
     // Determine header links based on login status
     const links = [
@@ -159,12 +168,13 @@ export default function LojaPage() {
         { label: "Times", href: `/times/${userId}` },
         { label: "Copas PAB", href: `/copasPab/${userId}` },
         { label: "Loja", href: `/loja/${userId}` },
-        { label: "Sair", href: "/", onClick: handleLogout }
+        { label: "Sair", href: "/", onClick: () => handleLogout() }
     ];
 
     const addToCart = async (produto, tamanho) => {
-        if (produto.tamanhos && !tamanho) {
-            showAlert(`Por favor, selecione um tamanho para "${produto.nome}".`);
+        // A condição foi ajustada para verificar se o array de tamanhos tem itens.
+        if (produto.tamanhos && produto.tamanhos.length > 0 && !tamanho) {
+            showAlert(`Por favor, selecione um tamanho para "${produto.nome}".`, 'info');
             return;
         }
 
@@ -315,7 +325,7 @@ export default function LojaPage() {
 
     const cartItemCount = cart.reduce((sum, item) => sum + item.quantidade, 0);
 
-    if (loading) {
+    if (isInitialLoad) { // 6. Mudar condição para o LoadingScreen
         return <LoadingScreen />;
     }
 
@@ -398,7 +408,11 @@ export default function LojaPage() {
                             <p className="text-red-500 text-lg">{erro}</p>
                         </div>
                     )}
-                    {!loading && (
+                    {loading ? ( // 7. Adicionar indicador de carregamento para filtros
+                        <div className="text-center py-12">
+                            <p className="text-xl text-gray-500">Carregando produtos...</p>
+                        </div>
+                    ) : (
                         <>
                             {filteredProducts.length === 0 ? (
                                 <div className="text-center py-12">

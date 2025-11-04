@@ -13,25 +13,32 @@ export default function CarrinhoPage() {
     const [discount, setDiscount] = useState(0);
     const [couponError, setCouponError] = useState("");
     const [showCouponBanner, setShowCouponBanner] = useState(true);
+    const [userId, setUserId] = useState(null);
     const router = useRouter();
 
+    // Links dinâmicos sem a opção de Sair
     const links = [
-        { label: "Inicio", href: `/` },
-        { label: "Copas PAB", href: `/copasPab` },
-        { label: "Loja", href: `/loja` },
-        { label: "Entrar", href: "/user/login" }
+        { label: "Inicio", href: `/inicioposlogin/${userId}` },
+        { label: "Perfil", href: `/perfil/${userId}` },
+        { label: "Times", href: `/times/${userId}` },
+        { label: "Copas PAB", href: `/copasPab/${userId}` },
+        { label: "Loja", href: `/loja/${userId}` }
     ];
 
     useEffect(() => {
-        const fetchCart = async () => {
+        const fetchCartAndUser = async () => {
             setLoading(true);
             
             try {
                 const token = localStorage.getItem('auth_token');
-                if (!token) {
+                const userIdFromStorage = localStorage.getItem('user_id'); // Obter o userId
+
+                if (!token || !userIdFromStorage) {
                     router.push('/user/login');
                     return;
                 }
+
+                setUserId(userIdFromStorage)
 
                 const response = await fetch('/api/cart', {
                     headers: {
@@ -64,12 +71,14 @@ export default function CarrinhoPage() {
             }
         };
 
-        fetchCart();
+        fetchCartAndUser();
     }, [router]);
+
+    // A função handleLogout foi removida
 
     const updateCart = async (newCart) => {
         setCart(newCart);
-        // Recalcula o desconto se o carrinho mudar
+        // Opcional: Atualizar o carrinho no backend
         handleApplyCoupon(couponCode, newCart);
     };
 
@@ -196,7 +205,7 @@ export default function CarrinhoPage() {
         // Save cart and order summary temporarily for payment page
         // The cart is stored in MongoDB, so we just pass the summary
         localStorage.setItem('order_summary', JSON.stringify({ subtotal, discount, total }));
-        router.push("/pagamento");
+        router.push(`/loja/carrinho/pagamento/${userId}`);
     };
 
     const subtotal = cart.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
@@ -257,7 +266,7 @@ export default function CarrinhoPage() {
                         <div className="flex flex-col items-center gap-4 py-12">
                             <p className="text-xl text-gray-500">Seu carrinho está vazio</p>
                             <Link
-                                href="/loja"
+                                href={`/loja/${userId}`}
                                 className="bg-pink text-white font-bold py-3 px-6 rounded-lg shadow hover:bg-purple transition-colors duration-300"
                             >
                                 IR PARA A LOJA
@@ -308,7 +317,7 @@ export default function CarrinhoPage() {
                                     {couponError && <p className="text-red-500 text-sm">{couponError}</p>}
                                     <div className="mt-4 flex flex-col sm:flex-row gap-3">
                                         <button onClick={clearCart} className="bg-gray-400 text-white font-bold py-3 px-6 rounded-lg shadow hover:bg-gray-500 flex-1">LIMPAR CARRINHO</button>
-                                        <Link href="/loja" className="bg-white border-2 border-pink text-pink text-center font-bold py-3 px-6 rounded-lg shadow hover:bg-pink/10 flex-1">CONTINUAR COMPRANDO</Link>
+                                        <Link href={`/loja/${userId}`} className="bg-white border-2 border-pink text-pink text-center font-bold py-3 px-6 rounded-lg shadow hover:bg-pink/10 flex-1">CONTINUAR COMPRANDO</Link>
                                     </div>
                                 </div>
 

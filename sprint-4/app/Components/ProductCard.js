@@ -1,22 +1,12 @@
+"use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function ProductCard({ nome, preco, imagem, onAddToCart, tamanhos = [] }) {
     const [selectedSize, setSelectedSize] = useState(null);
-    const router = useRouter();
 
     const handleAddToCart = () => {
-        // Tenta obter o token de autenticação do localStorage.
-        // O nome 'authToken' é um exemplo, use a chave que você definiu no seu sistema de login.
-        const isAuthenticated = localStorage.getItem('auth_token');
-
-        if (!isAuthenticated) {
-            // Se não encontrar o token, redireciona para a página de login.
-            router.push('/login');
-        } else {
-            // Se encontrar, prossegue com a adição do item ao carrinho.
-            onAddToCart(selectedSize);
-        }
+        // A lógica na página da loja vai verificar se um tamanho é necessário
+        onAddToCart(selectedSize);
     };
 
     return (

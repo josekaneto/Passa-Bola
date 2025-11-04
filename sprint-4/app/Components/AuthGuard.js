@@ -6,8 +6,8 @@ export default function AuthGuard({ children }) {
     const { id: usuarioId } = useParams();
 
     useEffect(() => {
-        const usuarios = typeof window !== "undefined" ? localStorage.getItem("usuarios") : null;
-        if (!usuarios) {
+        const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+        if (!authToken) {
             router.replace("/");
         }
     }, [router, usuarioId]);

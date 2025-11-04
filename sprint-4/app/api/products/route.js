@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import { Product } from '@/lib/models';
 
+// Função para remover acentos e converter para minúsculas
+const normalizeString = (str) => {
+    if (!str) return "";
+    return str
+        .normalize("NFD") // Separa os acentos das letras
+        .replace(/[\u0300-\u036f]/g, "") // Remove os acentos
+        .toLowerCase(); // Converte para minúsculas
+};
+
 export async function GET(request) {
   try {
     // Connect to MongoDB
@@ -16,11 +25,6 @@ export async function GET(request) {
 
     // Build query
     const query = { isActive: true };
-
-    // Search by name
-    if (search) {
-      query.nome = { $regex: search, $options: 'i' };
-    }
 
     // Filter by category
     if (categoria) {
@@ -38,11 +42,19 @@ export async function GET(request) {
       }
     }
 
-    // Find products
-    const products = await Product.find(query)
+    // Find products based on price and category first
+    let products = await Product.find(query)
       .sort({ createdAt: -1 })
       .select('-__v')
       .lean();
+
+    // If there's a search term, filter the results in the application
+    if (search) {
+      const normalizedSearchTerm = normalizeString(search);
+      products = products.filter(product => 
+        normalizeString(product.nome).includes(normalizedSearchTerm)
+      );
+    }
 
     // Transform products to match frontend format
     const transformedProducts = products.map(product => ({
@@ -206,7 +218,7 @@ export async function POST(request) {
       },
       {
         nome: "Garrafa Térmica PAB",
-        preco: 79.90,
+        preco: 49.90,
         imagem: "/garrafa.png",
         categoria: "Acessórios",
         descricao: "Garrafa térmica oficial, mantém a temperatura por horas.",

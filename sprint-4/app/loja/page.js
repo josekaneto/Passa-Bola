@@ -9,9 +9,11 @@ import CustomAlert from "@/app/Components/CustomAlert";
 
 export default function LojaPage() {
     const [loading, setLoading] = useState(true);
+    const [isInitialLoad, setIsInitialLoad] = useState(true); // Adicionar este estado
     const [produtos, setProdutos] = useState([]);
     const [erro, setErro] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm); // 1. Novo estado
     const [priceFilter, setPriceFilter] = useState("all");
     const [alertInfo, setAlertInfo] = useState({ show: false, message: '', type: 'info' });
     const router = useRouter();
@@ -20,10 +22,25 @@ export default function LojaPage() {
         setAlertInfo({ show: true, message, type });
     };
 
+    // 2. Novo useEffect para o debouncing
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 500); // Aguarda 500ms após o usuário parar de digitar
+
+        // Limpa o timeout se o usuário digitar novamente
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchTerm]);
+
+
     // Fetch products from API
     useEffect(() => {
         const fetchProducts = async () => {
-            setLoading(true);
+            if (isInitialLoad) {
+                setLoading(true);
+            }
             setErro("");
             try {
                 const params = new URLSearchParams();
@@ -35,8 +52,8 @@ export default function LojaPage() {
                 } else if (priceFilter === "over200") {
                     params.append("minPrice", "200");
                 }
-                if (searchTerm) {
-                    params.append("search", searchTerm);
+                if (debouncedSearchTerm) { // 3. Usar o estado debounced
+                    params.append("search", debouncedSearchTerm);
                 }
 
                 const queryString = params.toString();
@@ -57,11 +74,12 @@ export default function LojaPage() {
                 setProdutos([]);
             } finally {
                 setLoading(false);
+                setIsInitialLoad(false); // Marcar que o carregamento inicial terminou
             }
         };
 
         fetchProducts();
-    }, [searchTerm, priceFilter]);
+    }, [debouncedSearchTerm, isInitialLoad, priceFilter]); // 4. Atualizar dependência
 
     // Links para usuário não logado
     const links = [
@@ -82,7 +100,7 @@ export default function LojaPage() {
         }, 2000);
     };
 
-    if (loading) {
+    if (isInitialLoad) { // Mudar a condição para usar o novo estado
         return <LoadingScreen />;
     }
 
@@ -146,7 +164,11 @@ export default function LojaPage() {
                             <p className="text-red-500 text-lg">{erro}</p>
                         </div>
                     )}
-                    {!loading && (
+                    {loading ? (
+                        <div className="text-center py-12">
+                            <p className="text-xl text-gray-500">Carregando produtos...</p>
+                        </div>
+                    ) : (
                         <>
                             {produtos.length === 0 ? (
                                 <div className="text-center py-12">
@@ -161,21 +183,19 @@ export default function LojaPage() {
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {produtos.map(produto => (
-                                        <Link key={produto.id} href={`/loja/${produto.id}`} passHref>
-                                            <div className="cursor-pointer">
-                                                <ProductCard
-                                                    nome={produto.nome}
-                                                    preco={produto.preco}
-                                                    imagem={produto.imagem}
-                                                    tamanhos={produto.tamanhos}
-                                                    // A função agora recebe o 'event' diretamente do clique
-                                                    onAddToCart={(tamanho, event) => {
-                                                        // E o passamos para a função que precisa dele
-                                                        handleAddToCartRequest(event);
-                                                    }}
-                                                />
-                                            </div>
-                                        </Link>
+                                        <div key={produto.id} className="cursor-pointer">
+                                            <ProductCard
+                                                nome={produto.nome}
+                                                preco={produto.preco}
+                                                imagem={produto.imagem}
+                                                tamanhos={produto.tamanhos}
+                                                // A função agora recebe o 'event' diretamente do clique
+                                                onAddToCart={(tamanho, event) => {
+                                                    // E o passamos para a função que precisa dele
+                                                    handleAddToCartRequest(event);
+                                                }}
+                                            />
+                                        </div>
                                     ))}
                                 </div>
                             )}

@@ -7,6 +7,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import AuthGuard from "@/app/Components/AuthGuard";
+import MainContainer from "@/app/Components/MainContainer";
+import SectionContainer from "@/app/Components/SectionContainer";
 
 
 export default function PaginaUsuario() {
@@ -37,7 +39,7 @@ export default function PaginaUsuario() {
     const router = useRouter();
     useEffect(() => {
         setLoading(true);
-        const usuarios = typeof window !== "undefined" ? localStorage.getItem("usuarios") : null;
+        const usuarios = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
         if (!usuarios) {
             router.replace("/");
             return;
@@ -61,7 +63,7 @@ export default function PaginaUsuario() {
         <AuthGuard>
             <div >
                 <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-                {/* <MainContainer>
+                <MainContainer>
                     <SectionContainer tamanho={850}>
                         <div className="w-full flex flex-col items-start justify-center gap-2 mb-6 text-center">
                             <h2 className="text-2xl md:text-3xl font-bold mb-2 font-title">Entrar em um Time</h2>
@@ -93,7 +95,7 @@ export default function PaginaUsuario() {
                             </div>
                         </form>
                     </SectionContainer>
-                </MainContainer> */}
+                </MainContainer>
             </div>
         </AuthGuard>
     );

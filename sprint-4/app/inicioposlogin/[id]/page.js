@@ -16,7 +16,6 @@ export default function PaginaUsuario() {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_id');
          // Redireciona para a página inicial
-        router.push('/');
     };
     
     const links = [
@@ -25,7 +24,7 @@ export default function PaginaUsuario() {
         { label: "Times", href: `/times/${usuarioId}` },
         { label: "Loja", href: `/loja/${usuarioId}` },
         { label: "Copas PAB", href: "/copasPab" },
-        { label: "Sair", href: "/" , onClick: handleLogout }
+        { label: "Sair", href: "/", onClick: () => handleLogout() }
     ];
     useEffect(() => {
         setLoading(true);
