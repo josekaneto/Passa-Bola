@@ -10,6 +10,7 @@ import VoltarButton from '../../../Components/VoltarButton';
 import { useParams, useRouter } from 'next/navigation';
 import MainContainer from '@/app/Components/MainContainer';
 import SectionContainer from '@/app/Components/SectionContainer';
+import CustomAlert from '@/app/Components/CustomAlert';
 
 
 export default function CadastrarTime() {
@@ -31,6 +32,7 @@ export default function CadastrarTime() {
     const [cor2, setCor2] = useState('#000000');
     const [imagem, setImagem] = useState(null); // base64
     const [preview, setPreview] = useState(null); // para mostrar na tela
+    const [alert, setAlert] = useState({ show: false, message: "", type: "info" });
 
     const handleNomeChange = (e) => setNome(e.target.value);
     const handleDescricaoChange = (e) => setDescricao(e.target.value);
@@ -48,35 +50,77 @@ export default function CadastrarTime() {
         }
     };
 
-    // Salva time no localStorage
-    const handleSubmit = (e) => {
+    // Salva time no MongoDB
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const times = JSON.parse(localStorage.getItem("times") || "[]");
-        const idx = times.findIndex(t => String(t.id) === String(usuarioId));
-        const teamData = { id: usuarioId, nome, descricao, cor1, cor2, imagem };
-        if (idx !== -1) {
-            times[idx] = teamData;
-        } else {
-            times.push(teamData);
-        }
-        localStorage.setItem("times", JSON.stringify(times));
-        router.push(`/times/meutime/${usuarioId}`);
-    };
-
-    useEffect(() => {
-        setLoading(true);
         const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
         if (!authToken) {
             router.replace("/");
             return;
         }
-        // Carregar imagem se já existir
-        const times = JSON.parse(localStorage.getItem("times") || "[]");
-        const time = times.find(t => String(t.id) === String(usuarioId));
-        if (time && time.imagem) {
-            setPreview(time.imagem);
+        try {
+            const response = await fetch('/api/teams', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({
+                    nome,
+                    descricao,
+                    cor1,
+                    cor2,
+                    imagem
+                })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                router.push(`/times/meutime/${data.team.id}`);
+            } else {
+                const errorData = await response.json();
+                setAlert({ show: true, message: errorData.error || 'Erro ao criar time', type: 'error' });
+            }
+        } catch (error) {
+            console.error('Error creating team:', error);
+            setAlert({ show: true, message: 'Erro ao criar time', type: 'error' });
         }
-        setLoading(false);
+    };
+
+    useEffect(() => {
+        const fetchTeam = async () => {
+            setLoading(true);
+            const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+            if (!authToken) {
+                router.replace("/");
+                return;
+            }
+            try {
+                // Check if user already has a team
+                const response = await fetch(`/api/teams?captainId=${usuarioId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.teams && data.teams.length > 0) {
+                        const existingTeam = data.teams[0];
+                        setNome(existingTeam.nome);
+                        setDescricao(existingTeam.descricao);
+                        setCor1(existingTeam.cor1);
+                        setCor2(existingTeam.cor2);
+                        if (existingTeam.imagem) {
+                            setPreview(existingTeam.imagem);
+                            setImagem(existingTeam.imagem);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching team:', error);
+            }
+            setLoading(false);
+        };
+        fetchTeam();
     }, [router, usuarioId]);
 
     if (loading) {
@@ -85,6 +129,12 @@ export default function CadastrarTime() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-pink-50">
+            <CustomAlert 
+                show={alert.show} 
+                message={alert.message} 
+                type={alert.type} 
+                onClose={() => setAlert({ show: false, message: "", type: "info" })} 
+            />
             <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
             <MainContainer>
                 <SectionContainer tamanho={700}>

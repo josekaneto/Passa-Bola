@@ -4,6 +4,7 @@ import VoltarButton from "../../Components/VoltarButton";
 import Input from "../../Components/Input";
 import { useRouter } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import CustomAlert from "../../Components/CustomAlert";
 
 function CadastreSe() {
     const router = useRouter();
@@ -25,6 +26,7 @@ function CadastreSe() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [alert, setAlert] = useState({ show: false, message: "", type: "info" });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -43,6 +45,30 @@ function CadastreSe() {
             return;
         }
 
+        // Validate and normalize pernaDominante (case-insensitive)
+        const pernaDominanteLower = form.pernaDominante.trim().toLowerCase();
+        let normalizedPernaDominante = null;
+        
+        if (pernaDominanteLower === 'direita') {
+            normalizedPernaDominante = 'Direita';
+        } else if (pernaDominanteLower === 'esquerda') {
+            normalizedPernaDominante = 'Esquerda';
+        } else {
+            setAlert({ 
+                show: true, 
+                message: 'Perna dominante deve ser "Direita" ou "Esquerda"', 
+                type: 'error' 
+            });
+            setIsSubmitting(false);
+            return;
+        }
+
+        // Prepare form data with normalized pernaDominante
+        const formData = {
+            ...form,
+            pernaDominante: normalizedPernaDominante
+        };
+
         try {
             // Call MongoDB API
             const response = await fetch('/api/auth/register', {
@@ -50,7 +76,7 @@ function CadastreSe() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(form),
+                body: JSON.stringify(formData),
             });
 
             const data = await response.json();
@@ -63,13 +89,16 @@ function CadastreSe() {
             }
 
             // Success! Save token and redirect
-            if (data.token) {
+            if (data.token && data.user && data.user.id) {
                 localStorage.setItem('auth_token', data.token);
                 localStorage.setItem('user_id', data.user.id);
+                
+                // Redirect to inicioposlogin page already logged in
+                window.location.href = `/inicioposlogin/${data.user.id}`;
+            } else {
+                // Fallback: if user data is missing, redirect to login
+                window.location.href = "/user/login";
             }
-            
-            // Redirect to login page
-            window.location.href = "/user/login";
         } catch (error) {
             console.error('Registration error:', error);
             setErro('Erro ao conectar com o servidor. Tente novamente.');
@@ -79,6 +108,12 @@ function CadastreSe() {
 
     return (
         <div className="w-full min-h-svh lg:bg-[url('/campo.jpg')] lg:bg-cover lg:bg-center flex items-center justify-center bg-none font-corpo">
+            <CustomAlert 
+                show={alert.show} 
+                message={alert.message} 
+                type={alert.type} 
+                onClose={() => setAlert({ show: false, message: "", type: "info" })} 
+            />
             <div className="mx-auto w-full max-w-3xl md:max-w-6xl bg-white/90 bg-opacity-90 rounded-3xl flex flex-col justify-center items-center py-8 px-4 md:px-10" data-aos="fade-down" data-aos-delay="100">
                 <div className="w-3/4 flex justify-end" data-aos="fade-down" data-aos-delay="150">
                     <VoltarButton onClick={() => router.back()} />
@@ -97,7 +132,7 @@ function CadastreSe() {
                         <Input name="posicao" type="text" placeholder="Posição" value={form.posicao} onChange={handleChange} required disabled={isSubmitting} />
                         <Input name="altura" type="number" placeholder="Altura (cm)" value={form.altura} onChange={handleChange} required disabled={isSubmitting} />
                         <Input name="peso" type="number" placeholder="Peso (kg)" value={form.peso} onChange={handleChange} required disabled={isSubmitting} />
-                        <Input name="pernaDominante" type="text" placeholder="Perna dominante" value={form.pernaDominante} onChange={handleChange} required disabled={isSubmitting} />
+                        <Input name="pernaDominante" type="text" placeholder="Perna dominante (Direita ou Esquerda)" value={form.pernaDominante} onChange={handleChange} required disabled={isSubmitting} />
                         <div className="relative">
                             <Input name="senha" type={showPassword ? "text" : "password"} placeholder="Senha" value={form.senha} onChange={handleChange} required disabled={isSubmitting} />
                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-lg text-gray-600 cursor-pointer" onClick={() => setShowPassword(!showPassword)}>

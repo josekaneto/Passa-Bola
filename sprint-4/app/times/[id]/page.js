@@ -24,7 +24,6 @@ export default function PaginaUsuario() {
     ];
     const [loading, setLoading] = useState(true);
     const [times, setTimes] = useState([]);
-    const [jogadoras, setJogadoras] = useState([]);
 
     // Função para mascarar descrição por caracteres
     function mascaraDescricao(descricao) {
@@ -38,22 +37,35 @@ export default function PaginaUsuario() {
 
     const router = useRouter();
     useEffect(() => {
-        setLoading(true);
-        const usuarios = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-        if (!usuarios) {
-            router.replace("/");
-            return;
-        }
-        let times = [];
-        try {
-            times = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("times")) || [] : [];
-            if (!Array.isArray(times)) times = [];
-        } catch {
-            times = [];
-        }
-        setTimes(times);
-        setJogadoras(typeof window !== "undefined" ? JSON.parse(localStorage.getItem("jogadoras") || "[]") : []);
-        setLoading(false);
+        const fetchTimes = async () => {
+            setLoading(true);
+            const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+            if (!authToken) {
+                router.replace("/");
+                return;
+            }
+            try {
+                const response = await fetch('/api/teams', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Fetched teams:', data.teams);
+                    setTimes(data.teams || []);
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Error fetching teams:', errorData);
+                    setTimes([]);
+                }
+            } catch (error) {
+                console.error('Error fetching teams:', error);
+                setTimes([]);
+            }
+            setLoading(false);
+        };
+        fetchTimes();
     }, [router]);
 
     if (loading) {
@@ -87,7 +99,7 @@ export default function PaginaUsuario() {
                                             nome={time.nome}
                                             descricao={mascaraDescricao(time.descricao)}
                                             imagem={time.imagem ? time.imagem : "/time-feminino.png"}
-                                            membros={`${jogadoras.length}/15`}
+                                            membros={`${time.memberCount || 0}/${time.maxMembers || 15}`}
                                             link={`/times/meutime/${time.id}`}
                                         />
                                     ))

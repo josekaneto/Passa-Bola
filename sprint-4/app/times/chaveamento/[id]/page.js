@@ -15,15 +15,32 @@ export default function ChaveamentoPage() {
     const [times, setTimes] = useState([]);
 
     useEffect(() => {
-        setLoading(true);
-        const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-        if (!authToken) {
-            router.replace("/");
-            return;
-        }
-        const timesLocal = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("times") || "[]") : [];
-        setTimes(Array.isArray(timesLocal) ? timesLocal : []);
-        setLoading(false);
+        const fetchTimes = async () => {
+            setLoading(true);
+            const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+            if (!authToken) {
+                router.replace("/");
+                return;
+            }
+            try {
+                const response = await fetch('/api/teams', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setTimes(data.teams || []);
+                } else {
+                    setTimes([]);
+                }
+            } catch (error) {
+                console.error('Error fetching teams:', error);
+                setTimes([]);
+            }
+            setLoading(false);
+        };
+        fetchTimes();
     }, [router]);
 
     const links = [

@@ -47,6 +47,21 @@ export async function POST(request) {
       );
     }
 
+    // Normalize pernaDominante (case-insensitive)
+    const pernaDominanteLower = pernaDominante?.trim().toLowerCase();
+    let normalizedPernaDominante = null;
+    
+    if (pernaDominanteLower === 'direita') {
+      normalizedPernaDominante = 'Direita';
+    } else if (pernaDominanteLower === 'esquerda') {
+      normalizedPernaDominante = 'Esquerda';
+    } else {
+      return NextResponse.json(
+        { error: 'Perna dominante deve ser "Direita" ou "Esquerda"' },
+        { status: 400 }
+      );
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -67,7 +82,7 @@ export async function POST(request) {
       altura,
       peso,
       posicao,
-      pernaDominante,
+      pernaDominante: normalizedPernaDominante,
       senha
     });
 

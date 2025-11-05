@@ -10,12 +10,14 @@ import MainContainer from "@/app/Components/MainContainer";
 import SectionContainer from "@/app/Components/SectionContainer";
 import VoltarButton from "@/app/Components/VoltarButton";
 import Input from "@/app/Components/Input";
+import CustomAlert from "@/app/Components/CustomAlert";
 
 
 export default function ConvidarJogadoras() {
     const [loading, setLoading] = useState(true);
     const [novaJogadora, setNovaJogadora] = useState({ nomeCompleto: "", pernaDominante: "", posicao: "" });
     const [jogadoras, setJogadoras] = useState([]);
+    const [alert, setAlert] = useState({ show: false, message: "", type: "info" });
     const router = useRouter();
     const { id } = useParams();
     const links = [
@@ -28,40 +30,93 @@ export default function ConvidarJogadoras() {
     ];
 
     useEffect(() => {
-        setLoading(true);
-    const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-    if (!authToken) {
-            router.replace("/");
-            return;
-        }
-        if (typeof window !== "undefined") {
-            setJogadoras(JSON.parse(localStorage.getItem("jogadoras") || "[]"));
-        }
-        setLoading(false);
-    }, [router]);
-
-    const saveJogadoras = (list) => {
-        localStorage.setItem("jogadoras", JSON.stringify(list));
-    };
+        const fetchTeam = async () => {
+            setLoading(true);
+            const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+            if (!authToken) {
+                router.replace("/");
+                return;
+            }
+            try {
+                const response = await fetch(`/api/teams/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setJogadoras(data.team.members || []);
+                }
+            } catch (error) {
+                console.error('Error fetching team:', error);
+            }
+            setLoading(false);
+        };
+        fetchTeam();
+    }, [router, id]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setNovaJogadora((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleAddJogadora = (e) => {
+    const handleAddJogadora = async (e) => {
         e.preventDefault();
-        if (!novaJogadora.nomeCompleto) return;
-        const updated = [...jogadoras, novaJogadora];
-        setJogadoras(updated);
-        saveJogadoras(updated);
-        setNovaJogadora({ nomeCompleto: "", pernaDominante: "", posicao: "" });
+        if (!novaJogadora.nomeCompleto || !novaJogadora.posicao) return;
+        const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+        if (!authToken) return;
+        
+        try {
+            const response = await fetch(`/api/teams/${id}/members`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({
+                    nomeCompleto: novaJogadora.nomeCompleto,
+                    posicao: novaJogadora.posicao,
+                    pernaDominante: novaJogadora.pernaDominante
+                })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setJogadoras(data.team.members || []);
+                setNovaJogadora({ nomeCompleto: "", pernaDominante: "", posicao: "" });
+                setAlert({ show: true, message: 'Jogadora adicionada com sucesso!', type: 'success' });
+            } else {
+                const errorData = await response.json();
+                setAlert({ show: true, message: errorData.error || 'Erro ao adicionar jogadora', type: 'error' });
+            }
+        } catch (error) {
+            console.error('Error adding player:', error);
+            setAlert({ show: true, message: 'Erro ao adicionar jogadora', type: 'error' });
+        }
     };
 
-    const handleRemoveJogadora = (idx) => {
-        const updated = jogadoras.filter((_, i) => i !== idx);
-        setJogadoras(updated);
-        saveJogadoras(updated);
+    const handleRemoveJogadora = async (memberUserId) => {
+        const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+        if (!authToken) return;
+        
+        try {
+            const response = await fetch(`/api/teams/${id}/members?memberId=${memberUserId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+            if (response.ok) {
+                const updated = jogadoras.filter((j) => j.userId !== memberUserId);
+                setJogadoras(updated);
+                setAlert({ show: true, message: 'Jogadora removida com sucesso!', type: 'success' });
+            } else {
+                const errorData = await response.json();
+                setAlert({ show: true, message: errorData.error || 'Erro ao remover jogadora', type: 'error' });
+            }
+        } catch (error) {
+            console.error('Error removing player:', error);
+            setAlert({ show: true, message: 'Erro ao remover jogadora', type: 'error' });
+        }
     };
 
     if (loading) {
@@ -69,6 +124,12 @@ export default function ConvidarJogadoras() {
     }
     return (
         <AuthGuard>
+            <CustomAlert 
+                show={alert.show} 
+                message={alert.message} 
+                type={alert.type} 
+                onClose={() => setAlert({ show: false, message: "", type: "info" })} 
+            />
             <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
             <MainContainer classeAdicional="md:py-10">
                 <SectionContainer tamanho={650}>
@@ -112,11 +173,11 @@ export default function ConvidarJogadoras() {
                             ) : (
                                 <ul className="flex flex-col gap-4">
                                     {jogadoras.map((j, idx) => (
-                                        <li key={idx} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 p-4 bg-purple/10 rounded-xl shadow-md border border-purple/30">
+                                        <li key={j.userId || idx} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 p-4 bg-purple/10 rounded-xl shadow-md border border-purple/30">
                                             <span className="font-semibold text-lg text-black"><strong className="text-pink">Nome:</strong> {j.nomeCompleto}</span>
-                                            <span className="text-md text-gray-700"><strong className="text-purple">Perna dominante:</strong> {j.pernaDominante}</span>
+                                            <span className="text-md text-gray-700"><strong className="text-purple">Perna dominante:</strong> {j.pernaDominante || 'N/A'}</span>
                                             <span className="text-md text-gray-700"><strong className="text-purple">Posição:</strong> {j.posicao}</span>
-                                            <button className="text-red-500 font-bold ml-auto hover:underline hover:text-red-700 transition" onClick={() => handleRemoveJogadora(idx)}>Remover</button>
+                                            <button className="text-red-500 font-bold ml-auto hover:underline hover:text-red-700 transition" onClick={() => handleRemoveJogadora(j.userId)}>Remover</button>
                                         </li>
                                     ))}
                                 </ul>
