@@ -9,7 +9,7 @@ export default function TimeCard({ nome, descricao, imagem, membros, link }) {
                 <p className="text-md text-gray-700 text-center">{descricao}</p>
             </div>
             <div className="flex flex-row sm:flex-col justify-between items-center w-full mt-2 gap-1">
-                <a href={link} className="bg-pink text-white font-bold py-1 px-3 text-center rounded shadow hover:bg-pink-600 transition text-lg w-1/2">SOLICITAR</a>
+                <a href={link} className="bg-pink text-white font-bold py-1 px-3 text-center rounded shadow hover:bg-pink-600 transition text-lg w-1/2">Exibir Detalhes</a>
                 <span className="text-lg font-bold text-black sm:mt-1">{membros}</span>
             </div>
         </div>

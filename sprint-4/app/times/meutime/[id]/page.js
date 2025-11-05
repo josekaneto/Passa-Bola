@@ -411,7 +411,14 @@ export default function MeuTime() {
 								<span className="text-gray-500">Nenhuma jogadora convidada.</span>
 							) : (
 								jogadoras.map((j, idx) => (
-									<JogadoraCard key={j.userId || idx} nomeCompleto={j.nomeCompleto} pernaDominante={j.pernaDominante || ''} posicao={j.posicao} />
+									<JogadoraCard 
+										key={j.userId || idx} 
+										nomeCompleto={j.nomeCompleto} 
+										pernaDominante={j.pernaDominante || ''} 
+										posicao={j.posicao}
+										userId={j.userId}
+										onViewProfile={(userId) => router.push(`/perfil/${userId}`)}
+									/>
 								))
 							)}
 					</div>

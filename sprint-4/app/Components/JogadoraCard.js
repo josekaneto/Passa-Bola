@@ -1,5 +1,5 @@
 // Componente para exibir jogadora convidada
-export default function JogadoraCard({ nomeCompleto, pernaDominante, posicao }) {
+export default function JogadoraCard({ nomeCompleto, pernaDominante, posicao, userId, onViewProfile }) {
     return (
         <div className="flex flex-row items-center gap-4 p-4 bg-purple-100 rounded-xl shadow-sm min-w-[260px]">
             <div className="flex items-center justify-center w-14 h-14 rounded-full bg-white border border-gray-300">
@@ -11,7 +11,14 @@ export default function JogadoraCard({ nomeCompleto, pernaDominante, posicao }) 
             </div>
             <div className="flex flex-col items-end gap-1 min-w-[120px]">
                 <span className="text-black text-sm">Perna boa: {pernaDominante}</span>
-                <a className="text-pink-400 text-xs font-semibold cursor-pointer">Mais informações</a>
+                {userId && onViewProfile && (
+                    <button 
+                        className="text-pink-400 text-xs font-semibold cursor-pointer hover:text-pink-600 hover:underline transition-colors"
+                        onClick={() => onViewProfile(userId)}
+                    >
+                        Mais informações
+                    </button>
+                )}
             </div>
         </div>
     );

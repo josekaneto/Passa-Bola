@@ -11,6 +11,8 @@ export default function Perfil() {
     const [loading, setLoading] = useState(true);
     const { id: usuarioId } = useParams();
     const router = useRouter();
+    const [currentUserId, setCurrentUserId] = useState(null);
+    const [isOwner, setIsOwner] = useState(false);
     const links = [
         { label: "Inicio", href: `/inicioposlogin/${usuarioId}` },
         { label: "Perfil", href: `/perfil/${usuarioId}` },
@@ -53,6 +55,12 @@ export default function Perfil() {
     };
     const handleSave = async (e) => {
         e.preventDefault();
+        
+        // Only allow saving if user is the owner
+        if (!isOwner) {
+            alert('Você não tem permissão para editar este perfil.');
+            return;
+        }
         
         try {
             const token = localStorage.getItem('auth_token');
@@ -154,26 +162,78 @@ export default function Perfil() {
                 }
 
                 if (data.user) {
-                    setUsuario({
-                        nomeCompleto: data.user.nomeCompleto || "",
-                        dataNascimento: convertToDateInputFormat(data.user.dataNascimento || ""),
-                        email: data.user.email || "",
-                        telefone: data.user.telefone || "",
-                        nomeCamisa: data.user.nomeCamisa || "",
-                        numeroCamisa: data.user.numeroCamisa || "",
-                        altura: data.user.altura || "",
-                        peso: data.user.peso || "",
-                        posicao: data.user.posicao || "",
-                        pernaDominante: data.user.pernaDominante || "",
-                        senha: "" // Password is not returned from API
-                    });
+                    // Set current user ID
+                    setCurrentUserId(data.user.id);
+                    
+                    // Check if current user is the owner of this profile
+                    const isProfileOwner = data.user.id === usuarioId;
+                    setIsOwner(isProfileOwner);
+                    
+                    // If viewing own profile, use current user data
+                    // If viewing someone else's profile, fetch their data
+                    if (isProfileOwner) {
+                        setUsuario({
+                            nomeCompleto: data.user.nomeCompleto || "",
+                            dataNascimento: convertToDateInputFormat(data.user.dataNascimento || ""),
+                            email: data.user.email || "",
+                            telefone: data.user.telefone || "",
+                            nomeCamisa: data.user.nomeCamisa || "",
+                            numeroCamisa: data.user.numeroCamisa || "",
+                            altura: data.user.altura || "",
+                            peso: data.user.peso || "",
+                            posicao: data.user.posicao || "",
+                            pernaDominante: data.user.pernaDominante || "",
+                            senha: "" // Password is not returned from API
+                        });
 
-                    if (data.user.avatar) {
-                        setFotoPerfil(data.user.avatar);
+                        if (data.user.avatar) {
+                            setFotoPerfil(data.user.avatar);
+                        }
+
+                        // TODO: Fetch team name from team API when available
+                        setNomeTime("Você ainda não tem um time");
+                    } else {
+                        // Fetch the other user's profile data
+                        try {
+                            const profileResponse = await fetch(`/api/users/${usuarioId}`, {
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+                            
+                            if (profileResponse.ok) {
+                                const profileData = await profileResponse.json();
+                                if (profileData.user) {
+                                    setUsuario({
+                                        nomeCompleto: profileData.user.nomeCompleto || "",
+                                        dataNascimento: convertToDateInputFormat(profileData.user.dataNascimento || ""),
+                                        email: profileData.user.email || "",
+                                        telefone: profileData.user.telefone || "",
+                                        nomeCamisa: profileData.user.nomeCamisa || "",
+                                        numeroCamisa: profileData.user.numeroCamisa || "",
+                                        altura: profileData.user.altura || "",
+                                        peso: profileData.user.peso || "",
+                                        posicao: profileData.user.posicao || "",
+                                        pernaDominante: profileData.user.pernaDominante || "",
+                                        senha: "" // Password is not returned from API
+                                    });
+
+                                    if (profileData.user.avatar) {
+                                        setFotoPerfil(profileData.user.avatar);
+                                    }
+                                    
+                                    // TODO: Fetch team name from team API when available
+                                    setNomeTime("Sem time");
+                                }
+                            } else {
+                                const errorData = await profileResponse.json().catch(() => ({}));
+                                alert(errorData.error || 'Erro ao carregar perfil do usuário');
+                            }
+                        } catch (profileError) {
+                            console.error('Error fetching profile:', profileError);
+                            alert('Erro ao carregar perfil do usuário');
+                        }
                     }
-
-                    // TODO: Fetch team name from team API when available
-                    setNomeTime("Você ainda não tem um time");
                 }
 
                 setLoading(false);
@@ -254,9 +314,13 @@ export default function Perfil() {
                                 <div className="w-full flex justify-start mb-4">
                                     <VoltarButton onClick={router.back} />
                                 </div>
-                                <h2 className="text-2xl md:text-3xl font-bold mb-5 font-title text-center text-purple">Meu Perfil</h2>
+                                {isOwner && (
+                                    <h2 className="text-2xl md:text-3xl font-bold mb-5 font-title text-center text-purple">{usuario.nomeCompleto || "Perfil"}</h2>
+                                )}
                                 <div className="w-full flex flex-col items-center gap-3">
-                                    <h2 className="text-base md:text-lg font-semibold text-gray-700">Informações do seu perfil</h2>
+                                    <h2 className="text-base md:text-lg font-semibold text-gray-700">
+                                        {isOwner ? "Informações do seu perfil" : "Informações do perfil"}
+                                    </h2>
                                     <p className="text-sm md:text-base text-gray-600">
                                         Time: <strong className="text-green font-black">{nomeTime}</strong>
                                     </p>
@@ -264,17 +328,24 @@ export default function Perfil() {
                                 <hr className="my-4 w-full border-gray-300 rounded-xl" />
                                 <img src={fotoPerfil} alt="Foto de Perfil" className="w-24 h-24 md:w-32 md:h-32 rounded-full mb-4 object-cover shadow-md border-4 border-purple" />
                                 <span className="text-lg md:text-xl font-semibold mb-2 w-full text-center text-purple">{usuario.nomeCompleto}</span>
-                                <label className="mb-4 cursor-pointer w-full">
-                                    <input type="file" accept="image/*" className="border hidden" onChange={handleFotoChange} />
-                                    <span className="block text-center mt-2 text-sm text-gray-500 hover:text-purple transition">Selecionar a Imagem</span>
-                                </label>
-                                <button className="bg-purple hover:bg-purple-700 transition text-white rounded-lg px-6 py-2 font-bold shadow-md mt-2 mb-4 w-full" onClick={handleSave}>Salvar</button>
-                                <button 
-                                    className="bg-red-500 hover:bg-red-600 transition text-white rounded-lg px-6 py-2 font-bold shadow-md mt-2 mb-4 w-full" 
-                                    onClick={() => setShowDeleteModal(true)}
-                                >
-                                    Excluir Conta
-                                </button>
+                                {isOwner && (
+                                    <>
+                                        <label className="mb-4 cursor-pointer w-full">
+                                            <input type="file" accept="image/*" className="border hidden" onChange={handleFotoChange} />
+                                            <span className="block text-center mt-2 text-sm text-gray-500 hover:text-purple transition">Selecionar a Imagem</span>
+                                        </label>
+                                        <button className="bg-purple hover:bg-purple-700 transition text-white rounded-lg px-6 py-2 font-bold shadow-md mt-2 mb-4 w-full" onClick={handleSave}>Salvar</button>
+                                        <button 
+                                            className="bg-red-500 hover:bg-red-600 transition text-white rounded-lg px-6 py-2 font-bold shadow-md mt-2 mb-4 w-full" 
+                                            onClick={() => setShowDeleteModal(true)}
+                                        >
+                                            Excluir Conta
+                                        </button>
+                                    </>
+                                )}
+                                {!isOwner && (
+                                    <p className="text-sm text-gray-500 text-center mt-4">Você está visualizando o perfil de outro usuário</p>
+                                )}
                             </div>
                             <div className="w-full md:w-2/3 flex flex-col md:text-left text-center gap-5">
                                 <form className="w-full" action="">
@@ -299,8 +370,19 @@ export default function Perfil() {
                                             return (
                                                 <div key={key} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-xl bg-gray-50 shadow-sm border border-gray-200">
                                                     <label className="font-bold text-gray-600 w-full md:w-40 md:text-right md:mr-4">{label}</label>
-                                                    <Input type={type} name={key} value={value} onChange={handleChange}
-                                                        className={type === "password" ? "bg-white border border-gray-300 rounded-lg px-4 py-2 text-black w-full focus:outline-none focus:ring-2 focus:ring-purple transition" : "bg-white border border-gray-300 rounded-lg px-4 py-2 text-black flex-1 focus:outline-none focus:ring-2 focus:ring-purple transition"} />
+                                                    {isOwner ? (
+                                                        <Input 
+                                                            type={type} 
+                                                            name={key} 
+                                                            value={value} 
+                                                            onChange={handleChange}
+                                                            className={type === "password" ? "bg-white border border-gray-300 rounded-lg px-4 py-2 text-black w-full focus:outline-none focus:ring-2 focus:ring-purple transition" : "bg-white border border-gray-300 rounded-lg px-4 py-2 text-black flex-1 focus:outline-none focus:ring-2 focus:ring-purple transition"} 
+                                                        />
+                                                    ) : (
+                                                        <div className={type === "password" ? "bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-black w-full" : "bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-black flex-1"}>
+                                                            {type === "password" ? "••••••••" : value || "N/A"}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             );
                                         })}
