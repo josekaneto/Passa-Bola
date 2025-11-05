@@ -9,8 +9,6 @@ import LoadingScreen from "@/app/Components/LoadingScreen";
 import AuthGuard from "@/app/Components/AuthGuard";
 import MainContainer from "@/app/Components/MainContainer";
 import SectionContainer from "@/app/Components/SectionContainer";
-
-
 export default function PaginaUsuario() {
 
     const { id: usuarioId } = useParams();

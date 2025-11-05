@@ -5,6 +5,7 @@ import Header from "@/app/Components/Header";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import Link from "next/link";
 import CustomAlert from "@/app/Components/CustomAlert"; // 1. Importar o CustomAlert
+import AuthGuard from "@/app/Components/AuthGuard";
 
 const CART_STORAGE_KEY = "passa_bola_cart";
 
@@ -98,15 +99,16 @@ export default function PagamentoPage() {
     }
 
     return (
-        <main className="bg-gray-50 min-h-screen">
-            {/* 5. Renderizar o CustomAlert */}
-            <CustomAlert
-                show={alertInfo.show}
-                message={alertInfo.message}
-                type={alertInfo.type}
-                onClose={() => setAlertInfo({ show: false, message: '', type: 'info' })}
-            />
-            <Header links={links} bgClass="bg-white" src="/Logo-Preta.png" color="text-black" />
+        <AuthGuard>
+            <main className="bg-gray-50 min-h-screen">
+                {/* 5. Renderizar o CustomAlert */}
+                <CustomAlert
+                    show={alertInfo.show}
+                    message={alertInfo.message}
+                    type={alertInfo.type}
+                    onClose={() => setAlertInfo({ show: false, message: '', type: 'info' })}
+                />
+                <Header links={links} bgClass="bg-white" src="/Logo-Preta.png" color="text-black" />
 
             {/* Indicador de Progresso */}
             <div className="bg-white py-4 border-b border-gray-200">
@@ -208,5 +210,6 @@ export default function PagamentoPage() {
                 </form>
             </div>
         </main>
+        </AuthGuard>
     );
 }

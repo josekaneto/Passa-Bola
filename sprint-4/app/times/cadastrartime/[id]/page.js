@@ -128,14 +128,15 @@ export default function CadastrarTime() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-pink-50">
-            <CustomAlert 
-                show={alert.show} 
-                message={alert.message} 
-                type={alert.type} 
-                onClose={() => setAlert({ show: false, message: "", type: "info" })} 
-            />
-            <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
+        <AuthGuard>
+            <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-pink-50">
+                <CustomAlert 
+                    show={alert.show} 
+                    message={alert.message} 
+                    type={alert.type} 
+                    onClose={() => setAlert({ show: false, message: "", type: "info" })} 
+                />
+                <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
             <MainContainer>
                 <SectionContainer tamanho={700}>
                     <div className="mb-6">
@@ -203,5 +204,6 @@ export default function CadastrarTime() {
                 </SectionContainer>
             </MainContainer>
         </div>
+        </AuthGuard>
     );
 }

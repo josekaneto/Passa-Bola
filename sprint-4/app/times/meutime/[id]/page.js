@@ -10,6 +10,7 @@ import SectionContainer from "@/app/Components/SectionContainer";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import CustomAlert from "@/app/Components/CustomAlert";
 import CustomConfirm from "@/app/Components/CustomConfirm";
+import AuthGuard from "@/app/Components/AuthGuard";
 
 export default function MeuTime() {
 	const { id } = useParams();
@@ -20,6 +21,8 @@ export default function MeuTime() {
 	const [userId, setUserId] = useState(null);
 	const [isEditing, setIsEditing] = useState(false);
 	const [isCaptain, setIsCaptain] = useState(false);
+	const [isMember, setIsMember] = useState(false);
+	const [hasJoinRequest, setHasJoinRequest] = useState(false);
 	const [editForm, setEditForm] = useState({ nome: "", descricao: "", cor1: "#3b82f6", cor2: "#d1d5db", imagem: null });
 	const [preview, setPreview] = useState(null);
 	const [alert, setAlert] = useState({ show: false, message: "", type: "info" });
@@ -93,6 +96,30 @@ export default function MeuTime() {
 					// Check if current user is the captain
 					if (userData && userData.user && userData.user.id === team.captainId) {
 						setIsCaptain(true);
+					}
+					// Check if current user is a member
+					if (userData && userData.user && team.members) {
+						const isTeamMember = team.members.some(m => m.userId && (m.userId.toString() === userData.user.id || m.userId === userData.user.id));
+						setIsMember(isTeamMember);
+					}
+					// Check if user has a pending join request
+					if (userData && userData.user && !isCaptain) {
+						try {
+							const joinRequestResponse = await fetch(`/api/invitations?status=pending`, {
+								headers: {
+									'Authorization': `Bearer ${authToken}`
+								}
+							});
+							if (joinRequestResponse.ok) {
+								const joinRequestData = await joinRequestResponse.json();
+								const hasPendingRequest = joinRequestData.invitations.some(
+									inv => inv.type === 'invitation' && inv.teamId === team.id
+								);
+								setHasJoinRequest(hasPendingRequest);
+							}
+						} catch (error) {
+							console.error('Error checking join request:', error);
+						}
 					}
 				}
 			} catch (error) {
@@ -198,6 +225,77 @@ export default function MeuTime() {
 		});
 	};
 
+	// Handle leave team
+	const handleLeaveTeam = () => {
+		// Check if user is captain
+		if (isCaptain) {
+			setAlert({ 
+				show: true, 
+				message: 'Você não pode sair do time enquanto for a capitã. Transfira a capitania ou exclua o time.', 
+				type: 'error' 
+			});
+			return;
+		}
+
+		setConfirm({
+			show: true,
+			message: 'Tem certeza que deseja sair deste time?',
+			onConfirm: async () => {
+				setConfirm({ show: false, message: "", onConfirm: null });
+				const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+				if (!authToken || !userId) return;
+
+				try {
+					const response = await fetch(`/api/teams/${id}/members?memberId=${userId}`, {
+						method: 'DELETE',
+						headers: {
+							'Authorization': `Bearer ${authToken}`
+						}
+					});
+
+					if (response.ok) {
+						setAlert({ show: true, message: 'Você saiu do time com sucesso!', type: 'success' });
+						setTimeout(() => {
+							router.push(`/times/${userId}`);
+						}, 1500);
+					} else {
+						const errorData = await response.json();
+						setAlert({ show: true, message: errorData.error || 'Erro ao sair do time', type: 'error' });
+					}
+				} catch (error) {
+					console.error('Error leaving team:', error);
+					setAlert({ show: true, message: 'Erro ao sair do time', type: 'error' });
+				}
+			}
+		});
+	};
+
+	// Handle request to join team
+	const handleRequestToJoin = async () => {
+		const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+		if (!authToken) return;
+
+		try {
+			const response = await fetch(`/api/teams/${id}/join-request`, {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${authToken}`
+				}
+			});
+
+			if (response.ok) {
+				setAlert({ show: true, message: 'Solicitação enviada com sucesso! A capitã do time receberá uma notificação.', type: 'success' });
+				setHasJoinRequest(true);
+			} else {
+				const errorData = await response.json();
+				setAlert({ show: true, message: errorData.error || 'Erro ao enviar solicitação', type: 'error' });
+			}
+		} catch (error) {
+			console.error('Error requesting to join:', error);
+			setAlert({ show: true, message: 'Erro ao enviar solicitação', type: 'error' });
+		}
+	};
+
 	// Handle image upload
 	const handleImageChange = (e) => {
 		const file = e.target.files[0];
@@ -216,20 +314,21 @@ export default function MeuTime() {
 	}
 
 	return (
-        <>
-		<CustomAlert 
-			show={alert.show} 
-			message={alert.message} 
-			type={alert.type} 
-			onClose={() => setAlert({ show: false, message: "", type: "info" })} 
-		/>
-		<CustomConfirm
-			show={confirm.show}
-			message={confirm.message}
-			onConfirm={confirm.onConfirm || (() => {})}
-			onCancel={() => setConfirm({ show: false, message: "", onConfirm: null })}
-		/>
-        <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
+        <AuthGuard>
+            <>
+                <CustomAlert 
+                    show={alert.show} 
+                    message={alert.message} 
+                    type={alert.type} 
+                    onClose={() => setAlert({ show: false, message: "", type: "info" })} 
+                />
+                <CustomConfirm
+                    show={confirm.show}
+                    message={confirm.message}
+                    onConfirm={confirm.onConfirm || (() => {})}
+                    onCancel={() => setConfirm({ show: false, message: "", onConfirm: null })}
+                />
+                <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
 		<MainContainer>
 			<SectionContainer tamanho={800}>
                 <div className="w-full flex justify-end mb-4">
@@ -318,9 +417,25 @@ export default function MeuTime() {
 										</button>
 									</>
 								)}
-                                <button className="text-red-600 font-bold text-sm md:text-base hover:underline" onClick={() => router.push("/times")}>Sair do time</button>
+                                <button className="text-red-600 font-bold text-sm md:text-base hover:underline" onClick={handleLeaveTeam}>Sair do time</button>
 						</div>
 					</div>
+					{/* Solicitar para entrar button - only show if user is not captain, not a member, and hasn't already requested */}
+					{!isCaptain && !isMember && (
+						<div className="mt-4 flex justify-center">
+							<button
+								onClick={handleRequestToJoin}
+								disabled={hasJoinRequest}
+								className={`px-6 py-3 rounded-xl font-bold text-lg shadow-lg transition-colors duration-200 ${
+									hasJoinRequest
+										? 'bg-gray-400 text-white cursor-not-allowed'
+										: 'bg-pink text-white hover:bg-pink-600'
+								}`}
+							>
+								{hasJoinRequest ? 'Solicitação Enviada' : 'Solicitar para Entrar'}
+							</button>
+						</div>
+					)}
 					{isEditing && isCaptain && (
 						<div className="my-4 p-4 bg-purple/10 rounded-xl border border-purple/30">
 							<h3 className="text-xl font-bold text-purple mb-4">Editar Time</h3>
@@ -425,6 +540,7 @@ export default function MeuTime() {
 				</div>
 			</SectionContainer>
 		</MainContainer>
-        </>
+            </>
+        </AuthGuard>
 	);
 }

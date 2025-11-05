@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import Link from "next/link";
 import VoltarButton from "@/app/Components/VoltarButton";
+import AuthGuard from "@/app/Components/AuthGuard";
 
 export default function CarrinhoPage() {
     const [loading, setLoading] = useState(true);
@@ -216,8 +217,9 @@ export default function CarrinhoPage() {
     }
 
     return (
-        <main className="bg-gray-50 min-h-screen">
-            <Header links={links} bgClass="bg-white" src="/Logo-Preta.png" color="text-black" />
+        <AuthGuard>
+            <main className="bg-gray-50 min-h-screen">
+                <Header links={links} bgClass="bg-white" src="/Logo-Preta.png" color="text-black" />
 
             <div className="bg-white py-4 border-b border-gray-200">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -351,5 +353,6 @@ export default function CarrinhoPage() {
                 </div>
             </div>
         </main>
+        </AuthGuard>
     );
 }

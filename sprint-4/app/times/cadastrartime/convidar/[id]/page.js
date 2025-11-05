@@ -15,9 +15,11 @@ import CustomAlert from "@/app/Components/CustomAlert";
 
 export default function ConvidarJogadoras() {
     const [loading, setLoading] = useState(true);
-    const [novaJogadora, setNovaJogadora] = useState({ nomeCompleto: "", pernaDominante: "", posicao: "" });
+    const [users, setUsers] = useState([]);
     const [jogadoras, setJogadoras] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
     const [alert, setAlert] = useState({ show: false, message: "", type: "info" });
+    const [sendingInvites, setSendingInvites] = useState({});
     const router = useRouter();
     const { id } = useParams();
     const links = [
@@ -30,7 +32,7 @@ export default function ConvidarJogadoras() {
     ];
 
     useEffect(() => {
-        const fetchTeam = async () => {
+        const fetchData = async () => {
             setLoading(true);
             const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
             if (!authToken) {
@@ -38,59 +40,96 @@ export default function ConvidarJogadoras() {
                 return;
             }
             try {
-                const response = await fetch(`/api/teams/${id}`, {
+                // Fetch team members
+                const teamResponse = await fetch(`/api/teams/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (teamResponse.ok) {
+                    const teamData = await teamResponse.json();
+                    setJogadoras(teamData.team.members || []);
+                }
+
+                // Fetch available users (excluding current team members)
+                const usersResponse = await fetch(`/api/users?excludeTeamId=${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (usersResponse.ok) {
+                    const usersData = await usersResponse.json();
+                    setUsers(usersData.users || []);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+            setLoading(false);
+        };
+        fetchData();
+    }, [router, id]);
+
+    // Debounced search
+    useEffect(() => {
+        const fetchUsers = async () => {
+            const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+            if (!authToken) return;
+
+            try {
+                const url = `/api/users?excludeTeamId=${id}${searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ''}`;
+                const response = await fetch(url, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`
                     }
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    setJogadoras(data.team.members || []);
+                    setUsers(data.users || []);
                 }
             } catch (error) {
-                console.error('Error fetching team:', error);
+                console.error('Error searching users:', error);
             }
-            setLoading(false);
         };
-        fetchTeam();
-    }, [router, id]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setNovaJogadora((prev) => ({ ...prev, [name]: value }));
-    };
+        const timer = setTimeout(() => {
+            fetchUsers();
+        }, 300);
 
-    const handleAddJogadora = async (e) => {
-        e.preventDefault();
-        if (!novaJogadora.nomeCompleto || !novaJogadora.posicao) return;
+        return () => clearTimeout(timer);
+    }, [searchTerm, id]);
+
+    const handleInviteUser = async (userId) => {
         const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
         if (!authToken) return;
-        
+
+        setSendingInvites(prev => ({ ...prev, [userId]: true }));
+
         try {
-            const response = await fetch(`/api/teams/${id}/members`, {
+            const response = await fetch('/api/invitations', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${authToken}`
                 },
                 body: JSON.stringify({
-                    nomeCompleto: novaJogadora.nomeCompleto,
-                    posicao: novaJogadora.posicao,
-                    pernaDominante: novaJogadora.pernaDominante
+                    teamId: id,
+                    userId: userId
                 })
             });
+
             if (response.ok) {
-                const data = await response.json();
-                setJogadoras(data.team.members || []);
-                setNovaJogadora({ nomeCompleto: "", pernaDominante: "", posicao: "" });
-                setAlert({ show: true, message: 'Jogadora adicionada com sucesso!', type: 'success' });
+                setAlert({ show: true, message: 'Convite enviado com sucesso!', type: 'success' });
+                // Remove user from list (they now have a pending invitation)
+                setUsers(prev => prev.filter(u => u.id !== userId));
             } else {
                 const errorData = await response.json();
-                setAlert({ show: true, message: errorData.error || 'Erro ao adicionar jogadora', type: 'error' });
+                setAlert({ show: true, message: errorData.error || 'Erro ao enviar convite', type: 'error' });
             }
         } catch (error) {
-            console.error('Error adding player:', error);
-            setAlert({ show: true, message: 'Erro ao adicionar jogadora', type: 'error' });
+            console.error('Error sending invitation:', error);
+            setAlert({ show: true, message: 'Erro ao enviar convite', type: 'error' });
+        } finally {
+            setSendingInvites(prev => ({ ...prev, [userId]: false }));
         }
     };
 
@@ -138,36 +177,64 @@ export default function ConvidarJogadoras() {
                             <VoltarButton onClick={() => router.back()} />
                         </div>
                         <div className="flex flex-col items-center gap-4 mb-8">
-                            <h2 className="text-3xl font-extrabold text-purple drop-shadow mb-2 text-center font-title">Cadastrar Jogadoras</h2>
-                            <p className="text-lg text-gray-700 text-center max-w-xl">Adicione as jogadoras do seu time para participar da Copa Passa a Bola! Preencha os dados abaixo e clique em <span className='text-pink font-bold'>Adicionar Jogadora</span>.</p>
+                            <h2 className="text-3xl font-extrabold text-purple drop-shadow mb-2 text-center font-title">Convidar Jogadoras</h2>
+                            <p className="text-lg text-gray-700 text-center max-w-xl">Convide jogadoras do sistema para seu time! Busque pelo nome e envie convites.</p>
                         </div>
-                        <form className="flex flex-col gap-5 items-center justify-center bg-white/90 rounded-xl shadow-lg p-6 mb-8 border border-purple/30 max-w-4/5 mx-auto w-full" onSubmit={handleAddJogadora}>
+
+                        {/* Search */}
+                        <div className="mb-6 w-full">
                             <Input
                                 type="text"
-                                name="nomeCompleto"
-                                value={novaJogadora.nomeCompleto}
-                                onChange={handleChange}
-                                placeholder="Nome completo da jogadora"
-                                required
+                                name="search"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Buscar jogadoras pelo nome..."
+                                className="w-full"
                             />
-                            <Input
-                                type="text"
-                                name="pernaDominante"
-                                value={novaJogadora.pernaDominante}
-                                onChange={handleChange}
-                                placeholder="Perna dominante (ex: Direita, Esquerda)"
-                            />
-                            <Input
-                                type="text"
-                                name="posicao"
-                                value={novaJogadora.posicao}
-                                onChange={handleChange}
-                                placeholder="Posição (ex: Atacante, Goleira)"
-                            />
-                            <button type="submit" className="bg-pink text-white rounded-xl px-6 py-2 font-bold text-base shadow-md transition-colors duration-200 w-full">Adicionar Jogadora</button>
-                        </form>
+                        </div>
+
+                        {/* Available Users List */}
+                        <div className="bg-white/90 rounded-xl shadow-lg p-6 mb-8 border border-purple/30 max-w-4/5 mx-auto w-full">
+                            <h3 className="text-xl font-bold text-purple mb-4 text-center">Jogadoras Disponíveis</h3>
+                            {users.length === 0 ? (
+                                <p className="text-gray-400 text-center py-4">
+                                    {searchTerm ? 'Nenhuma jogadora encontrada.' : 'Nenhuma jogadora disponível para convite.'}
+                                </p>
+                            ) : (
+                                <ul className="flex flex-col gap-3 max-h-[300px] overflow-y-auto">
+                                    {users.map((user) => (
+                                        <li key={user.id} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 p-4 bg-purple/10 rounded-xl shadow-md border border-purple/30">
+                                            <div className="flex-1 flex flex-col gap-1">
+                                                <span className="font-semibold text-lg text-black">{user.nomeCompleto}</span>
+                                                {user.posicao && (
+                                                    <span className="text-sm text-gray-600">Posição: {user.posicao}</span>
+                                                )}
+                                                {user.teamId && (
+                                                    <span className="text-xs text-orange-600">Já está em um time</span>
+                                                )}
+                                            </div>
+                                            <button
+                                                onClick={() => handleInviteUser(user.id)}
+                                                disabled={sendingInvites[user.id] || !!user.teamId}
+                                                className={`px-4 py-2 rounded-lg font-bold text-sm shadow-md transition-colors duration-200 ${
+                                                    sendingInvites[user.id]
+                                                        ? 'bg-gray-400 text-white cursor-not-allowed'
+                                                        : user.teamId
+                                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                        : 'bg-pink text-white hover:bg-pink-600'
+                                                }`}
+                                            >
+                                                {sendingInvites[user.id] ? 'Enviando...' : user.teamId ? 'Em outro time' : 'Convidar'}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        {/* Current Team Members */}
                         <div className="bg-white/80 rounded-2xl shadow-lg p-3 border border-purple/20 max-w-4/5 mx-auto w-full">
-                            <h3 className="text-xl font-bold text-purple mb-4 text-center">Jogadoras cadastradas</h3>
+                            <h3 className="text-xl font-bold text-purple mb-4 text-center">Jogadoras do Time</h3>
                             {jogadoras.length === 0 ? (
                                 <p className="text-gray-400 text-center">Nenhuma jogadora cadastrada.</p>
                             ) : (
@@ -192,6 +259,3 @@ export default function ConvidarJogadoras() {
         </AuthGuard>
     );
 }
-
-
-

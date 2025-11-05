@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import CustomAlert from "@/app/Components/CustomAlert";
+import AuthGuard from "@/app/Components/AuthGuard";
 
 export default function LojaPage() {
     const [loading, setLoading] = useState(true);
@@ -330,14 +331,15 @@ export default function LojaPage() {
     }
 
     return (
-        <main className="bg-gray-50 min-h-screen">
-            <CustomAlert
-                show={alertInfo.show}
-                message={alertInfo.message}
-                type={alertInfo.type}
-                onClose={() => setAlertInfo({ show: false, message: '', type: 'info' })}
-            />
-            <Header links={links} bgClass="bg-white" src="/Logo-Preta.png" color="text-black" />
+        <AuthGuard>
+            <main className="bg-gray-50 min-h-screen">
+                <CustomAlert
+                    show={alertInfo.show}
+                    message={alertInfo.message}
+                    type={alertInfo.type}
+                    onClose={() => setAlertInfo({ show: false, message: '', type: 'info' })}
+                />
+                <Header links={links} bgClass="bg-white" src="/Logo-Preta.png" color="text-black" />
 
             <section className="bg-gradient-to-r from-green via-pink to-purple py-20 sm:py-32 mt-5 px-4 text-center">
                 <div className="max-w-4xl mx-auto" data-aos="fade-up">
@@ -600,5 +602,6 @@ export default function LojaPage() {
                 </div>
             )}
         </main>
+        </AuthGuard>
     );
 }
