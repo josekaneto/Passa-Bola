@@ -190,8 +190,27 @@ export default function Perfil() {
                             setFotoPerfil(data.user.avatar);
                         }
 
-                        // TODO: Fetch team name from team API when available
-                        setNomeTime("Você ainda não tem um time");
+                        // Fetch team name if user has a team
+                        if (data.user.teamId) {
+                            try {
+                                const teamResponse = await fetch(`/api/teams/${data.user.teamId}`, {
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`
+                                    }
+                                });
+                                if (teamResponse.ok) {
+                                    const teamData = await teamResponse.json();
+                                    setNomeTime(teamData.team.nome);
+                                } else {
+                                    setNomeTime(isOwner ? "Você ainda não tem um time" : "Sem time");
+                                }
+                            } catch (teamError) {
+                                console.error('Error fetching team:', teamError);
+                                setNomeTime(isOwner ? "Você ainda não tem um time" : "Sem time");
+                            }
+                        } else {
+                            setNomeTime(isOwner ? "Você ainda não tem um time" : "Sem time");
+                        }
                     } else {
                         // Fetch the other user's profile data
                         try {
@@ -222,8 +241,27 @@ export default function Perfil() {
                                         setFotoPerfil(profileData.user.avatar);
                                     }
                                     
-                                    // TODO: Fetch team name from team API when available
-                                    setNomeTime("Sem time");
+                                    // Fetch team name if user has a team
+                                    if (profileData.user.teamId) {
+                                        try {
+                                            const teamResponse = await fetch(`/api/teams/${profileData.user.teamId}`, {
+                                                headers: {
+                                                    'Authorization': `Bearer ${token}`
+                                                }
+                                            });
+                                            if (teamResponse.ok) {
+                                                const teamData = await teamResponse.json();
+                                                setNomeTime(teamData.team.nome);
+                                            } else {
+                                                setNomeTime("Sem time");
+                                            }
+                                        } catch (teamError) {
+                                            console.error('Error fetching team:', teamError);
+                                            setNomeTime("Sem time");
+                                        }
+                                    } else {
+                                        setNomeTime("Sem time");
+                                    }
                                 }
                             } else {
                                 const errorData = await profileResponse.json().catch(() => ({}));
