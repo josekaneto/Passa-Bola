@@ -11,6 +11,7 @@ import LoadingScreen from "@/app/Components/LoadingScreen";
 import CustomAlert from "@/app/Components/CustomAlert";
 import CustomConfirm from "@/app/Components/CustomConfirm";
 import AuthGuard from "@/app/Components/AuthGuard";
+import TeamChat from "@/app/Components/TeamChat";
 
 export default function MeuTime() {
 	const { id } = useParams();
@@ -330,7 +331,8 @@ export default function MeuTime() {
                 />
                 <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
 		<MainContainer>
-			<SectionContainer tamanho={800}>
+			<div className="w-full max-w-[1400px] flex flex-col lg:flex-row gap-6">
+				<SectionContainer tamanho={800}>
                 <div className="w-full flex justify-end mb-4">
                     <VoltarButton onClick={async (e) => {
                         e?.preventDefault?.();
@@ -539,6 +541,13 @@ export default function MeuTime() {
 					</div>
 				</div>
 			</SectionContainer>
+			{/* Chat Section - Right side - Only visible to team members */}
+			{isMember && (
+				<div className="w-full lg:w-[400px] flex-shrink-0">
+					<TeamChat teamId={id} userId={userId} />
+				</div>
+			)}
+		</div>
 		</MainContainer>
             </>
         </AuthGuard>

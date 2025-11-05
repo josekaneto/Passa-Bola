@@ -32,7 +32,7 @@ export default function LojaPage() {
         tamanhos: "",
         estoque: "",
         isFeatured: false,
-        isNew: false
+        isNewProduct: false
     });
     const router = useRouter();
 
@@ -254,7 +254,7 @@ export default function LojaPage() {
                     tamanhos: tamanhos,
                     estoque: parseInt(newProduct.estoque) || 0,
                     isFeatured: newProduct.isFeatured,
-                    isNew: newProduct.isNew
+                    isNewProduct: newProduct.isNewProduct
                 }),
             });
 
@@ -546,8 +546,8 @@ export default function LojaPage() {
                                 <label className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
-                                        checked={newProduct.isNew}
-                                        onChange={(e) => setNewProduct({ ...newProduct, isNew: e.target.checked })}
+                                        checked={newProduct.isNewProduct}
+                                        onChange={(e) => setNewProduct({ ...newProduct, isNewProduct: e.target.checked })}
                                         className="w-4 h-4"
                                     />
                                     <span>Novo</span>

@@ -67,7 +67,7 @@ export async function GET(request) {
       categoria: product.categoria,
       estoque: product.estoque,
       isFeatured: product.isFeatured,
-      isNew: product.isNew
+      isNew: product.isNewProduct
     }));
 
     return NextResponse.json({
@@ -111,7 +111,7 @@ export async function POST(request) {
         estoque: 100,
         isActive: true,
         isFeatured: true,
-        isNew: true
+        isNewProduct: true
       },
       {
         nome: "Chuteira Profissional",
@@ -123,7 +123,7 @@ export async function POST(request) {
         estoque: 50,
         isActive: true,
         isFeatured: true,
-        isNew: false
+        isNewProduct: false
       },
       {
         nome: "Bola Oficial PAB",
@@ -134,7 +134,7 @@ export async function POST(request) {
         estoque: 80,
         isActive: true,
         isFeatured: true,
-        isNew: true
+        isNewProduct: true
       },
       {
         nome: "Kit Treino Completo",
@@ -145,7 +145,7 @@ export async function POST(request) {
         estoque: 30,
         isActive: true,
         isFeatured: false,
-        isNew: false
+        isNewProduct: false
       },
       {
         nome: "Meião Oficial PAB",
@@ -157,7 +157,7 @@ export async function POST(request) {
         estoque: 150,
         isActive: true,
         isFeatured: false,
-        isNew: false
+        isNewProduct: false
       },
       {
         nome: "Luvas de Goleira",
@@ -169,7 +169,7 @@ export async function POST(request) {
         estoque: 40,
         isActive: true,
         isFeatured: false,
-        isNew: false
+        isNewProduct: false
       },
       {
         nome: "Mochila Esportiva PAB",
@@ -180,7 +180,7 @@ export async function POST(request) {
         estoque: 60,
         isActive: true,
         isFeatured: false,
-        isNew: true
+        isNewProduct: true
       },
       {
         nome: "Boné Oficial PAB",
@@ -191,7 +191,7 @@ export async function POST(request) {
         estoque: 120,
         isActive: true,
         isFeatured: false,
-        isNew: false
+        isNewProduct: false
       },
       {
         nome: "Caneleiras de Proteção",
@@ -203,7 +203,7 @@ export async function POST(request) {
         estoque: 90,
         isActive: true,
         isFeatured: false,
-        isNew: false
+        isNewProduct: false
       },
       {
         nome: "Caneca Oficial PAB",
@@ -214,7 +214,7 @@ export async function POST(request) {
         estoque: 200,
         isActive: true,
         isFeatured: false,
-        isNew: false
+        isNewProduct: false
       },
       {
         nome: "Garrafa Térmica PAB",
@@ -225,7 +225,7 @@ export async function POST(request) {
         estoque: 70,
         isActive: true,
         isFeatured: false,
-        isNew: true
+        isNewProduct: true
       },
       {
         nome: "Chaveiro Oficial PAB",
@@ -236,7 +236,7 @@ export async function POST(request) {
         estoque: 300,
         isActive: true,
         isFeatured: false,
-        isNew: false
+        isNewProduct: false
       }
     ];
 

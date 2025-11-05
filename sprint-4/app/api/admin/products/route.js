@@ -70,7 +70,7 @@ export async function POST(request) {
       descricao,
       estoque,
       isFeatured,
-      isNew
+      isNewProduct
     } = body;
 
     // Validation
@@ -91,7 +91,7 @@ export async function POST(request) {
       descricao: descricao || '',
       estoque: estoque || 0,
       isFeatured: isFeatured || false,
-      isNew: isNew || false,
+      isNewProduct: isNewProduct || false,
       isActive: true
     });
 
@@ -110,7 +110,7 @@ export async function POST(request) {
         descricao: product.descricao,
         estoque: product.estoque,
         isFeatured: product.isFeatured,
-        isNew: product.isNew
+        isNew: product.isNewProduct
       }
     }, { status: 201 });
 

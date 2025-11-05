@@ -1,4 +1,6 @@
 // Authentication utility functions
+import jwt from 'jsonwebtoken';
+import { NextResponse } from 'next/server';
 
 /**
  * Get token from request headers
@@ -16,7 +18,6 @@ export function getTokenFromRequest(request) {
  */
 export function verifyToken(token) {
   try {
-    const jwt = require('jsonwebtoken');
     return jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
   } catch (error) {
     return null;
@@ -27,7 +28,6 @@ export function verifyToken(token) {
  * Generate JWT token
  */
 export function generateToken(payload) {
-  const jwt = require('jsonwebtoken');
   return jwt.sign(
     payload,
     process.env.JWT_SECRET || 'fallback-secret-key',
