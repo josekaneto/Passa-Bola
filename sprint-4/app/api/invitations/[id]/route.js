@@ -149,7 +149,7 @@ export async function PUT(request, { params }) {
     }
 
     // Populate invitation data
-    await invitation.populate('teamId', 'nome');
+    await invitation.populate('teamId', 'nome descricao imagem');
     await invitation.populate('captainId', 'nomeCompleto');
     await invitation.populate('userId', 'nomeCompleto');
 
@@ -157,6 +157,32 @@ export async function PUT(request, { params }) {
     const message = isJoinRequest 
       ? (action === 'accept' ? 'Solicitação aceita com sucesso' : 'Solicitação recusada')
       : (action === 'accept' ? 'Convite aceito com sucesso' : 'Convite recusado');
+
+    // Emit WebSocket event to notify relevant users
+    if (global.io) {
+      const invitationData = {
+        id: invitation._id.toString(),
+        teamId: invitation.teamId._id.toString(),
+        teamName: invitation.teamId.nome,
+        teamDescription: invitation.teamId.descricao,
+        teamImage: invitation.teamId.imagem,
+        userId: invitation.userId._id?.toString() || invitation.userId.toString(),
+        userName: invitation.userId.nomeCompleto || 'N/A',
+        captainId: invitation.captainId._id?.toString() || invitation.captainId.toString(),
+        captainName: invitation.captainId.nomeCompleto || 'N/A',
+        type: isJoinRequest ? 'join_request' : 'invitation',
+        status: invitation.status,
+        createdAt: invitation.createdAt,
+        updatedAt: invitation.updatedAt
+      };
+
+      // Emit to both the user who received the invitation and the captain
+      const userIdStr = invitation.userId._id?.toString() || invitation.userId.toString();
+      const captainIdStr = invitation.captainId._id?.toString() || invitation.captainId.toString();
+      
+      global.io.to(`user:${userIdStr}`).emit('invitation_updated', { invitation: invitationData });
+      global.io.to(`user:${captainIdStr}`).emit('invitation_updated', { invitation: invitationData });
+    }
 
     return NextResponse.json({
       success: true,

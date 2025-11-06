@@ -102,8 +102,31 @@ export async function POST(request, { params }) {
     await joinRequest.save();
 
     // Populate join request data
-    await joinRequest.populate('teamId', 'nome');
+    await joinRequest.populate('teamId', 'nome descricao imagem');
     await joinRequest.populate('userId', 'nomeCompleto');
+    await joinRequest.populate('captainId', 'nomeCompleto');
+
+    // Emit WebSocket event to notify the captain
+    if (global.io) {
+      const joinRequestData = {
+        id: joinRequest._id.toString(),
+        teamId: joinRequest.teamId._id.toString(),
+        teamName: joinRequest.teamId.nome,
+        teamDescription: joinRequest.teamId.descricao,
+        teamImage: joinRequest.teamId.imagem,
+        userId: joinRequest.userId._id.toString(),
+        userName: joinRequest.userId.nomeCompleto || 'N/A',
+        captainId: joinRequest.captainId._id?.toString() || joinRequest.captainId.toString(),
+        captainName: joinRequest.captainId.nomeCompleto || 'N/A',
+        type: 'join_request',
+        status: joinRequest.status,
+        createdAt: joinRequest.createdAt
+      };
+      
+      // Emit to the captain (team captain receives join request)
+      const captainIdStr = joinRequest.captainId._id?.toString() || joinRequest.captainId.toString();
+      global.io.to(`user:${captainIdStr}`).emit('new_invitation', { invitation: joinRequestData });
+    }
 
     return NextResponse.json({
       success: true,

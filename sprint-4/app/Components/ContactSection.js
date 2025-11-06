@@ -1,26 +1,55 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useWebSocket } from "./WebSocketProvider";
 
 export default function ContactSection() {
     const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
     const [status, setStatus] = useState("");
+    const { socket, isConnected } = useWebSocket();
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setStatus("Enviando...");
-        try {
-            // Substitua a rota abaixo pela sua API se tiver
-            await fetch("/api/contact", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form),
-            });
+    // Listen for message confirmation
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('message_sent', () => {
             setStatus("Mensagem enviada!");
             setForm({ name: "", email: "", subject: "", message: "" });
+        });
+
+        socket.on('message_error', (data) => {
+            setStatus(data.error || "Erro ao enviar. Tente novamente.");
+        });
+
+        return () => {
+            socket.off('message_sent');
+            socket.off('message_error');
+        };
+    }, [socket]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (!isConnected || !socket) {
+            setStatus("Erro: Conexão não estabelecida. Tente novamente.");
+            return;
+        }
+
+        setStatus("Enviando...");
+        
+        try {
+            // Send message via WebSocket
+            socket.emit('send_message', {
+                name: form.name,
+                email: form.email,
+                subject: form.subject,
+                message: form.message,
+                timestamp: new Date().toISOString()
+            });
         } catch (err) {
             setStatus("Erro ao enviar. Tente novamente.");
+            console.error('Error sending message:', err);
         }
     };
 

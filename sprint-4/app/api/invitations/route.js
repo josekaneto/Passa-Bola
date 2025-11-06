@@ -109,8 +109,30 @@ export async function POST(request) {
     await invitation.save();
 
     // Populate invitation data
-    await invitation.populate('teamId', 'nome');
+    await invitation.populate('teamId', 'nome descricao imagem');
     await invitation.populate('captainId', 'nomeCompleto');
+    await invitation.populate('userId', 'nomeCompleto');
+
+    // Emit WebSocket event to notify the invited user
+    if (global.io) {
+      const invitationData = {
+        id: invitation._id.toString(),
+        teamId: invitation.teamId._id.toString(),
+        teamName: invitation.teamId.nome,
+        teamDescription: invitation.teamId.descricao,
+        teamImage: invitation.teamId.imagem,
+        userId: invitation.userId.toString(),
+        userName: invitation.userId.nomeCompleto || 'N/A',
+        captainId: invitation.captainId._id.toString(),
+        captainName: invitation.captainId.nomeCompleto,
+        type: 'invitation',
+        status: invitation.status,
+        createdAt: invitation.createdAt
+      };
+      
+      // Emit to the invited user
+      global.io.to(`user:${userId}`).emit('new_invitation', { invitation: invitationData });
+    }
 
     return NextResponse.json({
       success: true,
