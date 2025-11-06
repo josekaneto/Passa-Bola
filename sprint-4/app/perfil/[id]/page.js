@@ -343,81 +343,280 @@ export default function Perfil() {
     }
     return (
         <AuthGuard>
-            <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-100">
+            <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-green-50">
                 <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-                <div className="w-full max-w-7xl mx-auto px-4 py-8">
-                    <div className="max-w-[700px] mx-auto">
-                        <div className="flex flex-col md:flex-row items-center md:items-start gap-8 w-full">
-                            <div className="w-full md:w-1/3 flex flex-col gap-3 items-center bg-white rounded-2xl shadow-lg p-6 mb-6 md:mb-0">
-                                <div className="w-full flex justify-start mb-4">
-                                    <VoltarButton onClick={router.back} />
-                                </div>
-                                {isOwner && (
-                                    <h2 className="text-2xl md:text-3xl font-bold mb-5 font-title text-center text-purple">{usuario.nomeCompleto || "Perfil"}</h2>
-                                )}
-                                <div className="w-full flex flex-col items-center gap-3">
-                                    <h2 className="text-base md:text-lg font-semibold text-gray-700">
-                                        {isOwner ? "Informações do seu perfil" : "Informações do perfil"}
+                
+                {/* Banner/Header Section */}
+                <div className="w-full bg-gradient-to-r from-purple via-pink to-green py-12 px-4 shadow-lg" data-aos="fade-down">
+                    <div className="max-w-7xl mx-auto text-center">
+                        <h1 className="text-4xl md:text-5xl font-bold font-title text-white mb-3 drop-shadow-lg">
+                            {isOwner ? "Meu Perfil" : `Perfil de ${usuario.nomeCompleto}`}
+                        </h1>
+                        <p className="text-lg md:text-xl text-white/90">
+                            {isOwner ? "Gerencie suas informações pessoais" : "Informações da jogadora"}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="w-full max-w-7xl mx-auto px-4 py-10">
+                    <div className="flex justify-start mb-6" data-aos="fade-right">
+                        <VoltarButton onClick={router.back} />
+                    </div>
+
+                    <div className="flex flex-col lg:flex-row items-start gap-8 w-full mb-15">
+                        {/* Sidebar - Foto e Info Rápida */}
+                        <div className="w-full lg:w-80 flex flex-col gap-6 lg:sticky lg:top-24" data-aos="fade-right" data-aos-delay="100">
+                            {/* Card de Foto */}
+                            <div className="bg-white rounded-3xl shadow-xl p-10 border-2 border-purple/20">
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="relative">
+                                        <img 
+                                            src={fotoPerfil} 
+                                            alt="Foto de Perfil" 
+                                            className="w-40 h-40 rounded-full object-cover shadow-2xl border-4 border-purple ring-4 ring-purple/20 transition-transform duration-300 hover:scale-105" 
+                                        />
+                                        {isOwner && (
+                                            <div className="absolute bottom-2 right-2 bg-pink rounded-full p-2 shadow-lg">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <h2 className="text-2xl font-bold text-purple font-title text-center">
+                                        {usuario.nomeCompleto}
                                     </h2>
-                                    <p className="text-sm md:text-base text-gray-600">
-                                        Time: <strong className="text-green font-black">{nomeTime}</strong>
+                                    
+                                    {usuario.nomeCamisa && (
+                                        <div className="bg-gradient-to-r from-purple to-pink text-white px-4 py-2 rounded-full font-bold text-lg">
+                                            {usuario.nomeCamisa} #{usuario.numeroCamisa}
+                                        </div>
+                                    )}
+
+                                    {isOwner && (
+                                        <label className="w-full cursor-pointer">
+                                            <input type="file" accept="image/*" className="hidden" onChange={handleFotoChange} />
+                                            <div className="bg-gray-100 hover:bg-purple/10 text-purple font-semibold py-3 px-4 rounded-xl text-center transition-all duration-300 border-2 border-dashed border-purple/30 hover:border-purple flex items-center justify-center gap-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                Alterar Foto
+                                            </div>
+                                        </label>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Card de Info Rápida */}
+                            <div className="bg-white rounded-3xl shadow-xl p-6 border-2 border-green/20 flex-1">
+                                <h3 className="text-xl font-bold text-green font-title mb-4 text-center">Informações Rápidas</h3>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3 p-3 bg-green/5 rounded-xl">
+                                        <div className="bg-green/10 p-2 rounded-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500 font-semibold">Posição</p>
+                                            <p className="font-bold text-gray-800">{usuario.posicao || "N/A"}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 bg-purple/5 rounded-xl">
+                                        <div className="bg-purple/10 p-2 rounded-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500 font-semibold">Time</p>
+                                            <p className="font-bold text-gray-800">{nomeTime}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 bg-pink/5 rounded-xl">
+                                        <div className="bg-pink/10 p-2 rounded-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500 font-semibold">Perna Dominante</p>
+                                            <p className="font-bold text-gray-800">{usuario.pernaDominante || "N/A"}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {!isOwner && (
+                                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 text-center flex items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <p className="text-sm text-blue-600 font-semibold">
+                                        Você está visualizando o perfil de outra jogadora
                                     </p>
                                 </div>
-                                <hr className="my-4 w-full border-gray-300 rounded-xl" />
-                                <img src={fotoPerfil} alt="Foto de Perfil" className="w-24 h-24 md:w-32 md:h-32 rounded-full mb-4 object-cover shadow-md border-4 border-purple" />
-                                <span className="text-lg md:text-xl font-semibold mb-2 w-full text-center text-purple">{usuario.nomeCompleto}</span>
-                                {isOwner && (
-                                    <>
-                                        <label className="mb-4 cursor-pointer w-full">
-                                            <input type="file" accept="image/*" className="border hidden" onChange={handleFotoChange} />
-                                            <span className="block text-center mt-2 text-sm text-gray-500 hover:text-purple transition">Selecionar a Imagem</span>
-                                        </label>
-                                        <button className="bg-purple hover:bg-purple-700 transition text-white rounded-lg px-6 py-2 font-bold shadow-md mt-2 mb-4 w-full" onClick={handleSave}>Salvar</button>
-                                        <button 
-                                            className="bg-red-500 hover:bg-red-600 transition text-white rounded-lg px-6 py-2 font-bold shadow-md mt-2 mb-4 w-full" 
-                                            onClick={() => setShowDeleteModal(true)}
-                                        >
-                                            Excluir Conta
-                                        </button>
-                                    </>
-                                )}
-                                {!isOwner && (
-                                    <p className="text-sm text-gray-500 text-center mt-4">Você está visualizando o perfil de outro usuário</p>
-                                )}
-                            </div>
-                            <div className="w-full md:w-2/3 flex flex-col md:text-left text-center gap-5">
-                                <form className="w-full" action="">
-                                    <div className="flex flex-col gap-5 md:gap-7 md:max-h-[620px] md:overflow-auto w-full">
+                            )}
+                        </div>
+
+                        {/* Main Content - Formulário */}
+                        <div className="flex-1 w-full" data-aos="fade-left" data-aos-delay="150">
+                            <div className="bg-white rounded-3xl shadow-xl p-8 border-2 border-purple/10">
+                                <h3 className="text-3xl font-bold text-purple font-title mb-8 flex items-center gap-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Dados Pessoais
+                                </h3>
+
+                                <form className="w-full">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         {Object.entries(usuario).map(([key, value]) => {
                                             let label = "";
                                             let type = "text";
+                                            let IconComponent = null;
+                                            
                                             switch (key) {
-                                                case "nomeCompleto": label = "Nome completo"; break;
-                                                case "dataNascimento": label = "Data de nascimento"; type = "date"; break;
-                                                case "email": label = "Email"; type = "email"; break;
-                                                case "telefone": label = "Número do telefone"; type = "tel"; break;
-                                                case "nomeCamisa": label = "Nome na camisa"; break;
-                                                case "numeroCamisa": label = "Número da camisa"; type = "number"; break;
-                                                case "altura": label = "Altura (cm)"; type = "number"; break;
-                                                case "peso": label = "Peso (kg)"; type = "number"; break;
-                                                case "posicao": label = "Posição"; break;
-                                                case "pernaDominante": label = "Perna dominante"; break;
-                                                case "senha": label = "Senha Atual"; type = "password"; break;
-                                                default: label = key.charAt(0).toUpperCase() + key.slice(1);
+                                                case "nomeCompleto": 
+                                                    label = "Nome Completo"; 
+                                                    IconComponent = function UserIcon() {
+                                                        return (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                            </svg>
+                                                        );
+                                                    };
+                                                    break;
+                                                case "dataNascimento": 
+                                                    label = "Data de Nascimento"; 
+                                                    type = "date";
+                                                    IconComponent = function CalendarIcon() {
+                                                        return (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                            </svg>
+                                                        );
+                                                    };
+                                                    break;
+                                                case "email": 
+                                                    label = "Email"; 
+                                                    type = "email";
+                                                    IconComponent = function EmailIcon() {
+                                                        return (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                            </svg>
+                                                        );
+                                                    };
+                                                    break;
+                                                case "telefone": 
+                                                    label = "Telefone"; 
+                                                    type = "tel";
+                                                    IconComponent = function PhoneIcon() {
+                                                        return (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                            </svg>
+                                                        );
+                                                    };
+                                                    break;
+                                                case "nomeCamisa": 
+                                                    label = "Nome na Camisa";
+                                                    IconComponent = function ShirtIcon() {
+                                                        return (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                                            </svg>
+                                                        );
+                                                    };
+                                                    break;
+                                                case "numeroCamisa": 
+                                                    label = "Número da Camisa"; 
+                                                    type = "number";
+                                                    IconComponent = function NumberIcon() {
+                                                        return (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                                                            </svg>
+                                                        );
+                                                    };
+                                                    break;
+                                                case "altura": 
+                                                    label = "Altura (cm)"; 
+                                                    type = "number";
+                                                    IconComponent = function HeightIcon() {
+                                                        return (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                                            </svg>
+                                                        );
+                                                    };
+                                                    break;
+                                                case "peso": 
+                                                    label = "Peso (kg)"; 
+                                                    type = "number";
+                                                    IconComponent = function WeightIcon() {
+                                                        return (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                                                            </svg>
+                                                        );
+                                                    };
+                                                    break;
+                                                case "posicao": 
+                                                    label = "Posição";
+                                                    IconComponent = function PositionIcon() {
+                                                        return (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            </svg>
+                                                        );
+                                                    };
+                                                    break;
+                                                case "pernaDominante": 
+                                                    label = "Perna Dominante";
+                                                    IconComponent = function FootIcon() {
+                                                        return (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                            </svg>
+                                                        );
+                                                    };
+                                                    break;
+                                                case "senha": 
+                                                    label = "Senha Atual"; 
+                                                    type = "password";
+                                                    IconComponent = function LockIcon() {
+                                                        return (
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                            </svg>
+                                                        );
+                                                    };
+                                                    break;
+                                                default: 
+                                                    label = key.charAt(0).toUpperCase() + key.slice(1);
                                             }
+
                                             return (
-                                                <div key={key} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-xl bg-gray-50 shadow-sm border border-gray-200">
-                                                    <label className="font-bold text-gray-600 w-full md:w-40 md:text-right md:mr-4">{label}</label>
+                                                <div key={key} className="flex flex-col gap-2 group">
+                                                    <label className="font-bold text-gray-700 text-sm">
+                                                        {label}
+                                                    </label>
                                                     {isOwner ? (
                                                         <Input 
                                                             type={type} 
                                                             name={key} 
                                                             value={value} 
                                                             onChange={handleChange}
-                                                            className={type === "password" ? "bg-white border border-gray-300 rounded-lg px-4 py-2 text-black w-full focus:outline-none focus:ring-2 focus:ring-purple transition" : "bg-white border border-gray-300 rounded-lg px-4 py-2 text-black flex-1 focus:outline-none focus:ring-2 focus:ring-purple transition"} 
+                                                            className="bg-white border-2 border-gray-200 rounded-xl px-4 py-3 text-black w-full focus:outline-none focus:border-purple focus:ring-2 focus:ring-purple/20 transition-all duration-300 group-hover:border-purple/30" 
                                                         />
                                                     ) : (
-                                                        <div className={type === "password" ? "bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-black w-full" : "bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 text-black flex-1"}>
+                                                        <div className="bg-gray-50 border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-700 min-h-[44px] flex items-center">
                                                             {type === "password" ? "••••••••" : value || "N/A"}
                                                         </div>
                                                     )}
@@ -427,29 +626,74 @@ export default function Perfil() {
                                     </div>
                                 </form>
                             </div>
+
+                            {/* Botões de Ação */}
+                            {isOwner && (
+                                <div className="flex flex-col sm:flex-row gap-4 w-full mt-6" data-aos="fade-up" data-aos-delay="200">
+                                    <button 
+                                        className="flex-1 bg-gradient-to-r from-purple to-pink hover:from-purple-700 hover:to-pink-600 text-white rounded-xl px-6 py-4 font-bold shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
+                                        onClick={handleSave}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Salvar Alterações
+                                    </button>
+                                    <button 
+                                        className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-xl px-6 py-4 font-bold shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
+                                        onClick={() => setShowDeleteModal(true)}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Excluir Conta
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* Delete Account Confirmation Modal */}
                 {showDeleteModal && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-xl p-8 max-w-md w-full">
-                            <h2 className="text-2xl font-bold text-red-600 font-title mb-4">Excluir Conta</h2>
-                            <p className="text-gray-700 mb-6">
-                                Tem certeza que deseja excluir sua conta? Esta ação <strong>não pode ser desfeita</strong> e todos os seus dados serão permanentemente removidos.
-                            </p>
-                            <div className="flex gap-3">
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+                        <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl transform animate-scaleIn border-4 border-red-500">
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="bg-red-100 rounded-full p-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                                <h2 className="text-3xl font-bold text-red-600 font-title text-center">Excluir Conta</h2>
+                                <p className="text-gray-700 text-center leading-relaxed">
+                                    Tem certeza que deseja excluir sua conta? Esta ação <strong className="text-red-600">não pode ser desfeita</strong> e todos os seus dados serão permanentemente removidos.
+                                </p>
+                                <div className="w-full bg-red-50 border-2 border-red-200 rounded-xl p-4 mt-2 flex items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    <p className="text-sm text-red-600 font-semibold text-center">
+                                        Você perderá acesso a times, mensagens e todo o histórico!
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex flex-col sm:flex-row gap-3 mt-6">
                                 <button
                                     onClick={handleDeleteAccount}
-                                    className="flex-1 px-6 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors"
+                                    className="flex-1 px-6 py-4 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
                                 >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
                                     Confirmar Exclusão
                                 </button>
                                 <button
                                     onClick={() => setShowDeleteModal(false)}
-                                    className="flex-1 px-6 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
+                                    className="flex-1 px-6 py-4 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300 transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center gap-2"
                                 >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
                                     Cancelar
                                 </button>
                             </div>

@@ -161,6 +161,32 @@ export default function ConvidarJogadoras() {
     if (loading) {
         return <LoadingScreen />;
     }
+
+    // Icon Components
+    const InviteIcon = () => (
+        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+        </svg>
+    );
+
+    const SearchIcon = () => (
+        <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+    );
+
+    const UserIcon = () => (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+    );
+
+    const TeamMembersIcon = () => (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+    );
+
     return (
         <AuthGuard>
             <CustomAlert 
@@ -170,91 +196,216 @@ export default function ConvidarJogadoras() {
                 onClose={() => setAlert({ show: false, message: "", type: "info" })} 
             />
             <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-            <MainContainer classeAdicional="md:py-10">
-                <SectionContainer tamanho={650}>
-                    <div className="h-full min-h-screen sm:min-h-0 sm:h-auto flex flex-col justify-between">
-                        <div className="w-full flex justify-end mb-2">
-                            <VoltarButton onClick={() => router.back()} />
-                        </div>
-                        <div className="flex flex-col items-center gap-4 mb-8">
-                            <h2 className="text-3xl font-extrabold text-purple drop-shadow mb-2 text-center font-title">Convidar Jogadoras</h2>
-                            <p className="text-lg text-gray-700 text-center max-w-xl">Convide jogadoras do sistema para seu time! Busque pelo nome e envie convites.</p>
-                        </div>
-
-                        {/* Search */}
-                        <div className="mb-6 w-full">
-                            <Input
-                                type="text"
-                                name="search"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Buscar jogadoras pelo nome..."
-                                className="w-full"
+            
+            <MainContainer>
+                <div className="w-full max-w-7xl mx-auto px-4">
+                    {/* Banner Header */}
+                    <div className="bg-gradient-to-r from-purple via-pink to-green rounded-2xl p-8 mb-6 shadow-lg">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <InviteIcon />
+                                <div>
+                                    <h1 className="text-4xl font-bold text-white">Convidar Jogadoras</h1>
+                                    <p className="text-white/90 mt-1">Convide jogadoras para seu time</p>
+                                </div>
+                            </div>
+                            <VoltarButton 
+                                textColor="text-white" 
+                                hoverColor="hover:text-green"
+                                onClick={() => router.back()} 
                             />
                         </div>
+                    </div>
 
-                        {/* Available Users List */}
-                        <div className="bg-white/90 rounded-xl shadow-lg p-6 mb-8 border border-purple/30 max-w-4/5 mx-auto w-full">
-                            <h3 className="text-xl font-bold text-purple mb-4 text-center">Jogadoras Disponíveis</h3>
-                            {users.length === 0 ? (
-                                <p className="text-gray-400 text-center py-4">
-                                    {searchTerm ? 'Nenhuma jogadora encontrada.' : 'Nenhuma jogadora disponível para convite.'}
-                                </p>
-                            ) : (
-                                <ul className="flex flex-col gap-3 max-h-[300px] overflow-y-auto">
-                                    {users.map((user) => (
-                                        <li key={user.id} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 p-4 bg-purple/10 rounded-xl shadow-md border border-purple/30">
-                                            <div className="flex-1 flex flex-col gap-1">
-                                                <span className="font-semibold text-lg text-black">{user.nomeCompleto}</span>
-                                                {user.posicao && (
-                                                    <span className="text-sm text-gray-600">Posição: {user.posicao}</span>
-                                                )}
-                                                {user.teamId && (
-                                                    <span className="text-xs text-orange-600">Já está em um time</span>
-                                                )}
-                                            </div>
-                                            <button
-                                                onClick={() => handleInviteUser(user.id)}
-                                                disabled={sendingInvites[user.id] || !!user.teamId}
-                                                className={`px-4 py-2 rounded-lg font-bold text-sm shadow-md transition-colors duration-200 ${
-                                                    sendingInvites[user.id]
-                                                        ? 'bg-gray-400 text-white cursor-not-allowed'
-                                                        : user.teamId
-                                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                        : 'bg-pink text-white hover:bg-pink-600'
-                                                }`}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Main Content - Left Side */}
+                        <div className="lg:col-span-2 space-y-6">
+                            {/* Search Box */}
+                            <div className="bg-white rounded-2xl shadow-lg p-6">
+                                <label className="block text-gray-700 font-bold mb-3 text-lg">Buscar Jogadoras</label>
+                                <div className="relative">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                                        <SearchIcon />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        placeholder="Digite o nome da jogadora..."
+                                        className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple focus:ring-2 focus:ring-purple/20 transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Available Users List */}
+                            <div className="bg-white rounded-2xl shadow-lg p-6">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-2xl font-bold text-purple flex items-center gap-2">
+                                        <UserIcon />
+                                        Jogadoras Disponíveis
+                                    </h3>
+                                    <span className="bg-purple/10 text-purple px-4 py-2 rounded-full font-bold text-sm">
+                                        {users.length} {users.length === 1 ? 'jogadora' : 'jogadoras'}
+                                    </span>
+                                </div>
+                                
+                                {users.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <div className="text-gray-400 mb-3">
+                                            <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                            </svg>
+                                        </div>
+                                        <p className="text-gray-500 text-lg">
+                                            {searchTerm ? 'Nenhuma jogadora encontrada.' : 'Nenhuma jogadora disponível para convite.'}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                                        {users.map((user) => (
+                                            <div 
+                                                key={user.id} 
+                                                className="flex items-center justify-between p-4 bg-gradient-to-r from-purple/5 to-pink/5 rounded-xl border-2 border-purple/10 hover:border-purple/30 transition-all group"
                                             >
-                                                {sendingInvites[user.id] ? 'Enviando...' : user.teamId ? 'Em outro time' : 'Convidar'}
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
+                                                <div className="flex items-center gap-4 flex-1">
+                                                    <div className="bg-purple/10 p-3 rounded-full group-hover:bg-purple/20 transition-colors">
+                                                        <svg className="w-6 h-6 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                        </svg>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h4 className="font-bold text-lg text-gray-800">{user.nomeCompleto}</h4>
+                                                        <div className="flex flex-wrap gap-2 mt-1">
+                                                            {user.posicao && (
+                                                                <span className="text-sm bg-green/10 text-green px-3 py-1 rounded-full font-semibold">
+                                                                    {user.posicao}
+                                                                </span>
+                                                            )}
+                                                            {user.teamId && (
+                                                                <span className="text-sm bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-semibold">
+                                                                    Já está em um time
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleInviteUser(user.id)}
+                                                    disabled={sendingInvites[user.id] || !!user.teamId}
+                                                    className={`px-6 py-3 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2 ${
+                                                        sendingInvites[user.id]
+                                                            ? 'bg-gray-400 text-white cursor-not-allowed'
+                                                            : user.teamId
+                                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                            : 'bg-gradient-to-r from-pink to-purple text-white hover:shadow-lg hover:scale-105'
+                                                    }`}
+                                                >
+                                                    {sendingInvites[user.id] ? (
+                                                        <>
+                                                            <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                            </svg>
+                                                            Enviando...
+                                                        </>
+                                                    ) : user.teamId ? (
+                                                        'Indisponível'
+                                                    ) : (
+                                                        <>
+                                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                                            </svg>
+                                                            Convidar
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Current Team Members */}
-                        <div className="bg-white/80 rounded-2xl shadow-lg p-3 border border-purple/20 max-w-4/5 mx-auto w-full">
-                            <h3 className="text-xl font-bold text-purple mb-4 text-center">Jogadoras do Time</h3>
-                            {jogadoras.length === 0 ? (
-                                <p className="text-gray-400 text-center">Nenhuma jogadora cadastrada.</p>
-                            ) : (
-                                <ul className="flex flex-col gap-4">
-                                    {jogadoras.map((j, idx) => (
-                                        <li key={j.userId || idx} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 p-4 bg-purple/10 rounded-xl shadow-md border border-purple/30">
-                                            <span className="font-semibold text-lg text-black"><strong className="text-pink">Nome:</strong> {j.nomeCompleto}</span>
-                                            <span className="text-md text-gray-700"><strong className="text-purple">Perna dominante:</strong> {j.pernaDominante || 'N/A'}</span>
-                                            <span className="text-md text-gray-700"><strong className="text-purple">Posição:</strong> {j.posicao}</span>
-                                            <button className="text-red-500 font-bold ml-auto hover:underline hover:text-red-700 transition" onClick={() => handleRemoveJogadora(j.userId)}>Remover</button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-                        <div className="w-full flex justify-end mt-8">
-                            <Link href={`/times/meutime/${id}`} className="bg-purple hover:bg-pink text-white rounded-xl px-6 py-2 font-bold text-lg shadow-lg text-center transition-colors duration-200">Visualizar Time</Link>
+                        {/* Sidebar - Right Side */}
+                        <div className="lg:col-span-1 space-y-6">
+                            {/* Current Team Members */}
+                            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-6">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-xl font-bold text-purple flex items-center gap-2">
+                                        <TeamMembersIcon />
+                                        Membros Atuais
+                                    </h3>
+                                    <span className="bg-green/10 text-green px-3 py-1.5 rounded-full font-bold text-sm">
+                                        {jogadoras.length}
+                                    </span>
+                                </div>
+                                
+                                {jogadoras.length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <div className="text-gray-400 mb-3">
+                                            <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                        </div>
+                                        <p className="text-gray-500 text-sm">Nenhuma jogadora no time ainda</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                                        {jogadoras.map((j, idx) => (
+                                            <div 
+                                                key={j.userId || idx} 
+                                                className="p-4 bg-green/5 rounded-xl border border-green/20 hover:border-green/40 transition-all group"
+                                            >
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <h4 className="font-bold text-gray-800 flex-1">{j.nomeCompleto}</h4>
+                                                    <button 
+                                                        onClick={() => handleRemoveJogadora(j.userId)}
+                                                        className="text-red-500 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
+                                                        title="Remover jogadora"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <div className="space-y-1 text-sm">
+                                                    <div className="flex items-center gap-2 text-gray-600">
+                                                        <svg className="w-4 h-4 text-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                        </svg>
+                                                        <span><strong>Posição:</strong> {j.posicao}</span>
+                                                    </div>
+                                                    {j.pernaDominante && (
+                                                        <div className="flex items-center gap-2 text-gray-600">
+                                                            <svg className="w-4 h-4 text-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                            </svg>
+                                                            <span><strong>Perna:</strong> {j.pernaDominante}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Action Button */}
+                                <div className="mt-6 pt-6 border-t border-gray-200">
+                                    <Link 
+                                        href={`/times/meutime/${id}`} 
+                                        className="w-full bg-gradient-to-r from-purple to-pink hover:from-purple-700 hover:to-pink-600 text-white rounded-xl px-6 py-3 font-bold shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        Visualizar Time
+                                    </Link>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </SectionContainer>
+                </div>
             </MainContainer>
         </AuthGuard>
     );

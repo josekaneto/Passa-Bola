@@ -1,11 +1,11 @@
 import Link from "next/link";
 import React from "react";
 
-const VoltarButton = ({ onClick }) => (
+const VoltarButton = ({ onClick, textColor = "text-black", hoverColor = "hover:text-pink" }) => (
     <span className="relative group inline-block">
         <button
             onClick={onClick}
-            className="text-black font-semibold text-lg hover:text-pink duration-300 bg-transparent border-none cursor-pointer"
+            className={`${textColor} font-semibold text-lg ${hoverColor} duration-300 bg-transparent border-none cursor-pointer`}
             type="button"
         >
             Voltar

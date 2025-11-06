@@ -129,7 +129,7 @@ export default function CadastrarTime() {
 
     return (
         <AuthGuard>
-            <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-pink-50">
+            <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-green-50">
                 <CustomAlert 
                     show={alert.show} 
                     message={alert.message} 
@@ -137,73 +137,193 @@ export default function CadastrarTime() {
                     onClose={() => setAlert({ show: false, message: "", type: "info" })} 
                 />
                 <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-            <MainContainer>
-                <SectionContainer tamanho={700}>
-                    <div className="mb-6">
-                        <div className="w-full flex justify-end">
-                            <VoltarButton onClick={() => router.back()} />
-                        </div>
-                        <h2 className="text-3xl font-bold mb-5 font-title text-purple drop-shadow">Cadastrar um Time</h2>
-                        <div className="w-full flex items-center gap-20">
-                            <p className="text-lg text-gray-700">Cadastre o seu Time na Copa Passa a Bola!</p>
-                        </div>
-                        <hr className="my-6 w-full border-gray-300 rounded-xl" />
+                
+                {/* Banner/Header Section */}
+                <div className="w-full bg-gradient-to-r from-purple via-pink to-green py-12 px-4 shadow-lg" data-aos="fade-down">
+                    <div className="max-w-7xl mx-auto text-center">
+                        <h1 className="text-4xl md:text-5xl font-bold font-title text-white mb-3 drop-shadow-lg">
+                            Cadastrar Time
+                        </h1>
+                        <p className="text-lg md:text-xl text-white/90">
+                            Crie seu time e participe da Copa Passa a Bola!
+                        </p>
                     </div>
-                    <div className="flex flex-col items-center md:flex-row md:items-center sm:items-center gap-2 bg-white/80 rounded-2xl shadow-xl">
-                        <div className="flex flex-col items-center justify-start w-1/4 min-w-[180px] gap-4 pt-2">
-                            {preview ? (
-                                <img src={preview} alt="Avatar" className="w-24 h-24 sm:w-32 sm:h-32 object-cover mb-2 rounded-full border-4 border-purple shadow-lg transition-transform duration-300 hover:scale-105" />
-                            ) : (
-                                <img src="/womensTeams.png" alt="Avatar" className="w-24 h-24 sm:w-32 sm:h-32 object-cover mb-2 rounded-full border-4 border-purple shadow-lg transition-transform duration-300 hover:scale-105" />
-                            )}
-                            <div className="text-center w-full flex flex-col gap-5">
-                                <label className="mb-4 cursor-pointer">
-                                    <input type="file" accept="image/*" className="border hidden border-gray-300 rounded px-2 sm:px-4 py-2" onChange={handleImagemChange} />
-                                    <span className="block text-center mt-2 text-sm sm:text-base text-purple hover:underline">Selecionar a Imagem</span>
-                                </label>
-                                <div className="flex flex-col gap-2">
-                                    <Link href={`/times/cadastrartime/convidar/${usuarioId}`} className="text-purple font-bold text-sm sm:text-base hover:underline">Convidar</Link>
+                </div>
+
+                <div className="w-full max-w-7xl mx-auto px-4 py-10">
+                    <div className="flex justify-start mb-6" data-aos="fade-right">
+                        <VoltarButton onClick={() => router.back()} />
+                    </div>
+
+                    <div className="flex flex-col lg:flex-row items-start gap-8 w-full">
+                        {/* Sidebar - Logo do Time */}
+                        <div className="w-full lg:w-80 flex flex-col gap-6" data-aos="fade-right" data-aos-delay="100">
+                            {/* Card de Logo */}
+                            <div className="bg-white rounded-3xl shadow-xl p-8 border-2 border-purple/20">
+                                <div className="flex flex-col items-center gap-4">
+                                    <h3 className="text-xl font-bold text-purple font-title text-center mb-4">Logo do Time</h3>
+                                    
+                                    <div className="relative">
+                                        {preview ? (
+                                            <img 
+                                                src={preview} 
+                                                alt="Logo do Time" 
+                                                className="w-40 h-40 rounded-full object-cover shadow-2xl border-4 border-purple ring-4 ring-purple/20 transition-transform duration-300 hover:scale-105" 
+                                            />
+                                        ) : (
+                                            <img 
+                                                src="/womensTeams.png" 
+                                                alt="Logo Padrão" 
+                                                className="w-40 h-40 rounded-full object-cover shadow-2xl border-4 border-gray-300 ring-4 ring-gray-200 transition-transform duration-300 hover:scale-105" 
+                                            />
+                                        )}
+                                        <div className="absolute bottom-2 right-2 bg-pink rounded-full p-2 shadow-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <label className="w-full cursor-pointer">
+                                        <input type="file" accept="image/*" className="hidden" onChange={handleImagemChange} />
+                                        <div className="bg-gray-100 hover:bg-purple/10 text-purple font-semibold py-3 px-4 rounded-xl text-center transition-all duration-300 border-2 border-dashed border-purple/30 hover:border-purple flex items-center justify-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            Selecionar Logo
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Card de Ações Rápidas */}
+                            <div className="bg-white rounded-3xl shadow-xl p-6 border-2 border-green/20">
+                                <h3 className="text-xl font-bold text-green font-title mb-4 text-center">Ações Rápidas</h3>
+                                <div className="space-y-3">
+                                    <Link 
+                                        href={`/times/cadastrartime/convidar/${usuarioId}`} 
+                                        className="flex items-center gap-3 p-3 bg-green/5 rounded-xl hover:bg-green/10 transition-colors group"
+                                    >
+                                        <div className="bg-green/10 p-2 rounded-lg group-hover:bg-green/20 transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-gray-800">Convidar Jogadoras</p>
+                                            <p className="text-xs text-gray-500">Adicione membros ao time</p>
+                                        </div>
+                                    </Link>
                                 </div>
                             </div>
                         </div>
-                        <form className="w-3/4 flex flex-col gap-6 bg-white rounded-xl p-6" onSubmit={handleSubmit}>
-                            <div className="flex flex-col gap-2">
-                                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-center">
-                                    <span className="font-bold text-gray-600 text-sm sm:text-base">Nome do Time:</span>
-                                    <input value={nome} onChange={handleNomeChange} placeholder="Nome do time" className="border rounded-lg px-2 sm:px-3 py-2 text-black bg-white w-full sm:w-48 border-gray-400 focus:border-[var(--color-pink)] focus:outline-none shadow-sm transition-all duration-200" />
-                                </div>
+
+                        {/* Main Content - Formulário */}
+                        <div className="flex-1 w-full" data-aos="fade-left" data-aos-delay="150">
+                            <div className="bg-white rounded-3xl shadow-xl p-8 border-2 border-purple/10">
+                                <h3 className="text-3xl font-bold text-purple font-title mb-8 flex items-center gap-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                    Informações do Time
+                                </h3>
+
+                                <form onSubmit={handleSubmit} className="w-full space-y-6">
+                                    {/* Nome do Time */}
+                                    <div className="flex flex-col gap-2 group">
+                                        <label className="font-bold text-gray-700 text-sm">
+                                            Nome do Time
+                                        </label>
+                                        <input 
+                                            value={nome} 
+                                            onChange={handleNomeChange} 
+                                            placeholder="Digite o nome do time" 
+                                            required
+                                            className="bg-white border-2 border-gray-200 rounded-xl px-4 py-3 text-black w-full focus:outline-none focus:border-purple focus:ring-2 focus:ring-purple/20 transition-all duration-300 group-hover:border-purple/30" 
+                                        />
+                                    </div>
+
+                                    {/* Descrição */}
+                                    <div className="flex flex-col gap-2 group">
+                                        <label className="font-bold text-gray-700 text-sm">
+                                            Descrição do Time
+                                        </label>
+                                        <textarea 
+                                            rows="5" 
+                                            value={descricao} 
+                                            onChange={handleDescricaoChange}
+                                            placeholder="Descreva seu time..."
+                                            required
+                                            className="bg-white border-2 border-gray-200 rounded-xl px-4 py-3 text-black w-full focus:outline-none focus:border-purple focus:ring-2 focus:ring-purple/20 transition-all duration-300 group-hover:border-purple/30 resize-none"
+                                        />
+                                    </div>
+
+                                    {/* Cores Principais */}
+                                    <div className="flex flex-col gap-3">
+                                        <label className="font-bold text-gray-700 text-sm">
+                                            Cores do Time
+                                        </label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-4 hover:border-purple/30 transition-all group">
+                                                <label className="text-xs font-semibold text-gray-600 mb-2 block">Cor Principal</label>
+                                                <div className="flex items-center gap-3">
+                                                    <ColorInput
+                                                        id="cor1"
+                                                        value={cor1}
+                                                        onChange={e => setCor1(e.target.value)}
+                                                        title="Escolha a cor principal"
+                                                    />
+                                                    <span className="text-sm font-mono text-gray-600">{cor1}</span>
+                                                </div>
+                                            </div>
+                                            <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-4 hover:border-purple/30 transition-all group">
+                                                <label className="text-xs font-semibold text-gray-600 mb-2 block">Cor Secundária</label>
+                                                <div className="flex items-center gap-3">
+                                                    <ColorInput
+                                                        id="cor2"
+                                                        value={cor2}
+                                                        onChange={e => setCor2(e.target.value)}
+                                                        title="Escolha a cor secundária"
+                                                        colorClass="purple"
+                                                    />
+                                                    <span className="text-sm font-mono text-gray-600">{cor2}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-2 p-3 bg-purple/5 rounded-xl border border-purple/20">
+                                            <div className="flex gap-1">
+                                                <div 
+                                                    className="w-8 h-8 rounded-lg border-2 border-white shadow-md" 
+                                                    style={{ backgroundColor: cor1 }}
+                                                ></div>
+                                                <div 
+                                                    className="w-8 h-8 rounded-lg border-2 border-white shadow-md" 
+                                                    style={{ backgroundColor: cor2 }}
+                                                ></div>
+                                            </div>
+                                            <span className="text-xs text-gray-600 font-semibold">Preview das cores</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Botão Salvar */}
+                                    <div className="flex justify-end pt-6 border-t-2 border-gray-200">
+                                        <button 
+                                            type="submit" 
+                                            className="bg-gradient-to-r from-purple to-pink hover:from-purple-700 hover:to-pink-600 text-white rounded-xl px-8 py-4 font-bold shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Salvar Time
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
-                            <div className="flex flex-col gap-1">
-                                <span className="font-bold text-gray-600 text-sm sm:text-base">Descrição do Time</span>
-                                <textarea rows="7" value={descricao} onChange={handleDescricaoChange}
-                                    className="border border-gray-300 rounded-lg px-2 sm:px-3 py-2 text-black bg-white resize-none text-sm sm:text-base focus:border-[var(--color-pink)] focus:outline-none shadow-sm transition-all duration-200" />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <span className="font-bold text-gray-600 text-sm sm:text-base">Cores Principais:</span>
-                                <div className="flex flex-row gap-2 sm:gap-3 mt-1">
-                                    <ColorInput
-                                        id="cor1"
-                                        value={cor1}
-                                        onChange={e => setCor1(e.target.value)}
-                                        title="Escolha a cor principal 1"
-                                    />
-                                    <ColorInput
-                                        id="cor2"
-                                        value={cor2}
-                                        onChange={e => setCor2(e.target.value)}
-                                        title="Escolha a cor principal 2"
-                                        colorClass="purple"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex justify-end mt-6">
-                                <button type="submit" className="bg-purple text-white font-bold px-6 sm:px-10 py-2 rounded-lg text-sm sm:text-base shadow-md hover:bg-pink transition-colors duration-200">Salvar</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
-                </SectionContainer>
-            </MainContainer>
-        </div>
+                </div>
+            </div>
         </AuthGuard>
     );
 }
