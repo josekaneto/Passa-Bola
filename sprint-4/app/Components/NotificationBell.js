@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useWebSocket } from "./WebSocketProvider";
 
 export default function NotificationBell({ userId }) {
     const [notifications, setNotifications] = useState([]);
@@ -9,54 +8,15 @@ export default function NotificationBell({ userId }) {
     const [loading, setLoading] = useState(false);
     const dropdownRef = useRef(null);
     const router = useRouter();
-    const { socket, isConnected } = useWebSocket();
 
-    // Initial fetch of notifications
     useEffect(() => {
         if (userId) {
             fetchNotifications();
+            // Poll for new notifications every 30 seconds
+            const interval = setInterval(fetchNotifications, 30000);
+            return () => clearInterval(interval);
         }
     }, [userId]);
-
-    // WebSocket listeners for real-time notifications
-    useEffect(() => {
-        if (!socket || !isConnected) return;
-
-        // Listen for new invitations
-        socket.on('new_invitation', (data) => {
-            setNotifications(prev => {
-                // Check if invitation already exists
-                const exists = prev.some(n => n.id === data.invitation.id);
-                if (exists) return prev;
-                return [data.invitation, ...prev];
-            });
-        });
-
-        // Listen for invitation updates
-        socket.on('invitation_updated', (data) => {
-            setNotifications(prev => {
-                if (data.invitation.status !== 'pending') {
-                    // Remove non-pending invitations
-                    return prev.filter(n => n.id !== data.invitation.id);
-                }
-                // Update existing invitation
-                return prev.map(n => 
-                    n.id === data.invitation.id ? data.invitation : n
-                );
-            });
-        });
-
-        // Listen for invitation removal
-        socket.on('invitation_removed', (data) => {
-            setNotifications(prev => prev.filter(n => n.id !== data.invitationId));
-        });
-
-        return () => {
-            socket.off('new_invitation');
-            socket.off('invitation_updated');
-            socket.off('invitation_removed');
-        };
-    }, [socket, isConnected]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -94,11 +54,6 @@ export default function NotificationBell({ userId }) {
 
         setLoading(true);
         try {
-            // Emit WebSocket event first for real-time update
-            if (socket && isConnected) {
-                socket.emit('accept_invitation', { invitationId });
-            }
-
             const response = await fetch(`/api/invitations/${invitationId}`, {
                 method: 'PUT',
                 headers: {
@@ -109,7 +64,8 @@ export default function NotificationBell({ userId }) {
             });
 
             if (response.ok) {
-                // The WebSocket event will handle the notification removal
+                // Remove accepted notification
+                setNotifications(prev => prev.filter(n => n.id !== invitationId));
                 // Refresh page to show updated team
                 window.location.reload();
             } else {
@@ -130,11 +86,6 @@ export default function NotificationBell({ userId }) {
 
         setLoading(true);
         try {
-            // Emit WebSocket event first for real-time update
-            if (socket && isConnected) {
-                socket.emit('decline_invitation', { invitationId });
-            }
-
             const response = await fetch(`/api/invitations/${invitationId}`, {
                 method: 'PUT',
                 headers: {
@@ -145,7 +96,8 @@ export default function NotificationBell({ userId }) {
             });
 
             if (response.ok) {
-                // The WebSocket event will handle the notification removal
+                // Remove declined notification
+                setNotifications(prev => prev.filter(n => n.id !== invitationId));
             } else {
                 const errorData = await response.json();
                 alert(errorData.error || 'Erro ao recusar convite');

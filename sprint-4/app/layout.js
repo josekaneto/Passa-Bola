@@ -4,7 +4,6 @@ import "./globals.css";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { useEffect } from "react";
-import { WebSocketProvider } from "./Components/WebSocketProvider";
 
 export default function RootLayout({ children }) {
 
@@ -21,9 +20,7 @@ export default function RootLayout({ children }) {
       <link rel="icon" href="/logo.svg" />
     </head>
     <body className="overflow-hidden">
-        <WebSocketProvider>
-          {children}
-        </WebSocketProvider>
+        {children}
       </body>
     </html>
   );
