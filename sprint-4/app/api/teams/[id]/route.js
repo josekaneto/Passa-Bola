@@ -25,7 +25,7 @@ function transformTeam(team) {
     descricao: team.descricao,
     cor1: team.cor1,
     cor2: team.cor2,
-    imagem: team.imagem || '/time-feminino.png',
+    imagem: team.imagem || '/time_padrao.png',
     captainId: team.captainId?._id?.toString() || team.captainId?.toString(),
     captainName: team.captainId?.nomeCompleto || 'N/A',
     members: team.members?.map(member => ({

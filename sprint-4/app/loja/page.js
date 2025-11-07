@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import CustomAlert from "@/app/Components/CustomAlert";
+import Footer from "../Components/Footer";
+import PageBanner from "../Components/PageBanner";
 
 export default function LojaPage() {
     const [loading, setLoading] = useState(true);
@@ -117,25 +119,13 @@ export default function LojaPage() {
             />
             <Header links={links} bgClass="bg-white" src="/Logo-Preta.png" color="text-black" />
 
-            <section className="bg-gradient-to-r from-green via-pink to-purple py-20 sm:py-32 mt-5 px-4 text-center">
-                <div className="max-w-4xl mx-auto" data-aos="fade-up">
-                    <h1 className="text-4xl sm:text-6xl font-bold font-title text-white">
-                        Bem-vindo à Loja PAB
-                    </h1>
-                    <p className="mt-4 text-lg sm:text-xl text-white max-w-2xl mx-auto">
-                        Encontre os melhores equipamentos e produtos oficiais para levar seu jogo para o próximo nível.
-                    </p>
-                </div>
-            </section>
+            <PageBanner 
+                title="Loja PAB"
+                subtitle="Encontre os melhores equipamentos e produtos oficiais para levar seu jogo para o próximo nível."
+            />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col gap-6">
-                    <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between gap-4">
-                            <h1 className="text-4xl font-bold text-pink font-title">LOJA PAB</h1>
-                        </div>
-                        <p className="text-lg text-gray-700">Equipamentos e produtos oficiais para seu time!</p>
-                    </div>
                     <div className="flex flex-col sm:flex-row gap-4 p-4 bg-white rounded-lg shadow-sm">
                         <div className="flex-1">
                             <input
@@ -189,9 +179,7 @@ export default function LojaPage() {
                                                 preco={produto.preco}
                                                 imagem={produto.imagem}
                                                 tamanhos={produto.tamanhos}
-                                                // A função agora recebe o 'event' diretamente do clique
                                                 onAddToCart={(tamanho, event) => {
-                                                    // E o passamos para a função que precisa dele
                                                     handleAddToCartRequest(event);
                                                 }}
                                             />
@@ -203,6 +191,7 @@ export default function LojaPage() {
                     )}
                 </div>
             </div>
+            <Footer links={links} />
         </main>
     );
 }

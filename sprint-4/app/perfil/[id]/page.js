@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import VoltarButton from "@/app/Components/VoltarButton";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import AuthGuard from "@/app/Components/AuthGuard";
+import PageBanner from "@/app/Components/PageBanner";
 
 export default function Perfil() {
     const [loading, setLoading] = useState(true);
@@ -345,21 +346,14 @@ export default function Perfil() {
         <AuthGuard>
             <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-green-50">
                 <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-                
-                {/* Banner/Header Section */}
-                <div className="w-full bg-gradient-to-r from-purple via-pink to-green py-12 px-4 shadow-lg" data-aos="fade-down">
-                    <div className="max-w-7xl mx-auto text-center">
-                        <h1 className="text-4xl md:text-5xl font-bold font-title text-white mb-3 drop-shadow-lg">
-                            {isOwner ? "Meu Perfil" : `Perfil de ${usuario.nomeCompleto}`}
-                        </h1>
-                        <p className="text-lg md:text-xl text-white/90">
-                            {isOwner ? "Gerencie suas informações pessoais" : "Informações da jogadora"}
-                        </p>
-                    </div>
-                </div>
+
+                <PageBanner
+                    title={isOwner ? "Meu Perfil" : `Perfil de ${usuario.nomeCompleto}`}
+                    subtitle={isOwner ? "Gerencie suas informações pessoais" : "Informações da jogadora"}
+                />
 
                 <div className="w-full max-w-7xl mx-auto px-4 py-10">
-                    <div className="flex justify-start mb-6" data-aos="fade-right">
+                    <div className="flex justify-end mb-6" data-aos="fade-right">
                         <VoltarButton onClick={router.back} />
                     </div>
 

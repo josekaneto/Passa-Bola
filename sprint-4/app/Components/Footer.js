@@ -1,7 +1,7 @@
 import Link from "next/link";
 import React, { useState } from "react";
 
-export default function Footer() {
+export default function Footer({links}) {
     const year = new Date().getFullYear();
     const [email, setEmail] = useState("");
 
@@ -12,7 +12,7 @@ export default function Footer() {
     };
 
     return (
-        <footer className="w-full bg-purple/40 font-corpo">
+        <footer className="w-full bg-white font-corpo">
             <div className="mx-auto w-full max-w-[80%] px-4 sm:px-6 py-12 md:py-16">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Brand */}
@@ -45,10 +45,13 @@ export default function Footer() {
                     <nav aria-label="Links principais" className="flex flex-col gap-2">
                         <h4 className="font-semibold text-2xl text-pink font-title">Links Úteis</h4>
                         <ul className="flex flex-col gap-2 text-sm text-gray-700">
-                            <li><Link href="/" className="hover:underline">Home</Link></li>
-                            <li><Link href="/copa" className="hover:underline">Copa PAB</Link></li>
-                            <li><Link href="/loja" className="hover:underline">Loja</Link></li>
-                            <li><Link href="/user/login" className="hover:underline">Entrar</Link></li>
+                            {links.map((link) => (
+                                <li key={link.href} className="relative group">
+                                    <Link href={link.href} className="hover:text-pink transition-colors duration-300">
+                                        {link.label}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </nav>
 

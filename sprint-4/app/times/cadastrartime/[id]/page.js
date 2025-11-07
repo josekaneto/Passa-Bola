@@ -11,12 +11,14 @@ import { useParams, useRouter } from 'next/navigation';
 import MainContainer from '@/app/Components/MainContainer';
 import SectionContainer from '@/app/Components/SectionContainer';
 import CustomAlert from '@/app/Components/CustomAlert';
+import PageBanner from '@/app/Components/PageBanner';
 
 
 export default function CadastrarTime() {
     const router = useRouter();
     const { id: usuarioId } = useParams();
     const [loading, setLoading] = useState(true);
+    const [hasTeam, setHasTeam] = useState(false);
     const links = [
         { label: "Inicio", href: `/inicioposlogin/${usuarioId}` },
         { label: "Perfil", href: `/perfil/${usuarioId}` },
@@ -75,7 +77,14 @@ export default function CadastrarTime() {
             });
             if (response.ok) {
                 const data = await response.json();
-                router.push(`/times/meutime/${data.team.id}`);
+                setAlert({
+                    show: true,
+                    message: 'Time criado com sucesso!',
+                    type: 'success'
+                });
+                setTimeout(() => {
+                    router.push(`/times/meutime/${data.team.id}`);
+                }, 1500);
             } else {
                 const errorData = await response.json();
                 setAlert({ show: true, message: errorData.error || 'Erro ao criar time', type: 'error' });
@@ -87,7 +96,7 @@ export default function CadastrarTime() {
     };
 
     useEffect(() => {
-        const fetchTeam = async () => {
+        const checkUserTeam = async () => {
             setLoading(true);
             const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
             if (!authToken) {
@@ -95,63 +104,106 @@ export default function CadastrarTime() {
                 return;
             }
             try {
-                // Check if user already has a team
-                const response = await fetch(`/api/teams?captainId=${usuarioId}`, {
+                // Get user data
+                const userResponse = await fetch('/api/auth/me', {
                     headers: {
                         'Authorization': `Bearer ${authToken}`
                     }
                 });
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.teams && data.teams.length > 0) {
-                        const existingTeam = data.teams[0];
-                        setNome(existingTeam.nome);
-                        setDescricao(existingTeam.descricao);
-                        setCor1(existingTeam.cor1);
-                        setCor2(existingTeam.cor2);
-                        if (existingTeam.imagem) {
-                            setPreview(existingTeam.imagem);
-                            setImagem(existingTeam.imagem);
+
+                if (userResponse.ok) {
+                    const userData = await userResponse.json();
+                    console.log('User data:', userData);
+
+                    // Get all teams
+                    const teamsResponse = await fetch('/api/teams', {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+
+                    if (teamsResponse.ok) {
+                        const teamsData = await teamsResponse.json();
+                        console.log('Teams data:', teamsData);
+
+                        // Check if user is captain or member of any team
+                        const userTeam = teamsData.teams?.find(team =>
+                            team.captainId === userData.user.id ||
+                            team.members?.some(member => member.userId === userData.user.id)
+                        );
+
+                        if (userTeam) {
+                            console.log('User already has a team:', userTeam);
+                            setHasTeam(true);
+                            setAlert({
+                                show: true,
+                                message: 'Você já tem um time cadastrado! Redirecionando...',
+                                type: 'warning'
+                            });
+                            setTimeout(() => {
+                                router.push(`/times/${usuarioId}`);
+                            }, 2000);
                         }
                     }
                 }
             } catch (error) {
-                console.error('Error fetching team:', error);
+                console.error('Error checking user team:', error);
             }
             setLoading(false);
         };
-        fetchTeam();
+        checkUserTeam();
     }, [router, usuarioId]);
 
     if (loading) {
         return <LoadingScreen />;
     }
 
+    // Se o usuário já tem um time, mostra apenas o alerta
+    if (hasTeam) {
+        return (
+            <AuthGuard>
+                <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-green-50">
+                    <CustomAlert
+                        show={alert.show}
+                        message={alert.message}
+                        type={alert.type}
+                        onClose={() => {
+                            setAlert({ show: false, message: "", type: "info" });
+                            router.push(`/times/${usuarioId}`);
+                        }}
+                    />
+                    <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
+                    <PageBanner
+                        title="Time Já Cadastrado"
+                        subtitle="Você já possui um time na Copa Passa a Bola!"
+                    />
+                    <div className="flex items-center justify-center py-20">
+                        <LoadingScreen />
+                    </div>
+                </div>
+            </AuthGuard>
+        );
+    }
+
     return (
         <AuthGuard>
             <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-green-50">
-                <CustomAlert 
-                    show={alert.show} 
-                    message={alert.message} 
-                    type={alert.type} 
-                    onClose={() => setAlert({ show: false, message: "", type: "info" })} 
+                <CustomAlert
+                    show={alert.show}
+                    message={alert.message}
+                    type={alert.type}
+                    onClose={() => setAlert({ show: false, message: "", type: "info" })}
                 />
                 <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-                
-                {/* Banner/Header Section */}
-                <div className="w-full bg-gradient-to-r from-purple via-pink to-green py-12 px-4 shadow-lg" data-aos="fade-down">
-                    <div className="max-w-7xl mx-auto text-center">
-                        <h1 className="text-4xl md:text-5xl font-bold font-title text-white mb-3 drop-shadow-lg">
-                            Cadastrar Time
-                        </h1>
-                        <p className="text-lg md:text-xl text-white/90">
-                            Crie seu time e participe da Copa Passa a Bola!
-                        </p>
-                    </div>
-                </div>
+
+                <PageBanner
+                    title="Cadastrar Time"
+                    subtitle="Crie seu time e participe da Copa Passa a Bola!"
+                />
+
 
                 <div className="w-full max-w-7xl mx-auto px-4 py-10">
-                    <div className="flex justify-start mb-6" data-aos="fade-right">
+                    <div className="flex justify-end mb-6" data-aos="fade-right">
                         <VoltarButton onClick={() => router.back()} />
                     </div>
 
@@ -162,19 +214,19 @@ export default function CadastrarTime() {
                             <div className="bg-white rounded-3xl shadow-xl p-8 border-2 border-purple/20">
                                 <div className="flex flex-col items-center gap-4">
                                     <h3 className="text-xl font-bold text-purple font-title text-center mb-4">Logo do Time</h3>
-                                    
+
                                     <div className="relative">
                                         {preview ? (
-                                            <img 
-                                                src={preview} 
-                                                alt="Logo do Time" 
-                                                className="w-40 h-40 rounded-full object-cover shadow-2xl border-4 border-purple ring-4 ring-purple/20 transition-transform duration-300 hover:scale-105" 
+                                            <img
+                                                src={preview}
+                                                alt="Logo do Time"
+                                                className="w-40 h-40 rounded-full object-cover shadow-2xl border-4 border-purple ring-4 ring-purple/20 transition-transform duration-300 hover:scale-105"
                                             />
                                         ) : (
-                                            <img 
-                                                src="/womensTeams.png" 
-                                                alt="Logo Padrão" 
-                                                className="w-40 h-40 rounded-full object-cover shadow-2xl border-4 border-gray-300 ring-4 ring-gray-200 transition-transform duration-300 hover:scale-105" 
+                                            <img
+                                                src="/time_padrao.png"
+                                                alt="Logo Padrão"
+                                                className="w-40 h-40 rounded-full object-cover shadow-2xl border-4 border-gray-300 ring-4 ring-gray-200 transition-transform duration-300 hover:scale-105"
                                             />
                                         )}
                                         <div className="absolute bottom-2 right-2 bg-pink rounded-full p-2 shadow-lg">
@@ -197,24 +249,18 @@ export default function CadastrarTime() {
                                 </div>
                             </div>
 
-                            {/* Card de Ações Rápidas */}
-                            <div className="bg-white rounded-3xl shadow-xl p-6 border-2 border-green/20">
-                                <h3 className="text-xl font-bold text-green font-title mb-4 text-center">Ações Rápidas</h3>
-                                <div className="space-y-3">
-                                    <Link 
-                                        href={`/times/cadastrartime/convidar/${usuarioId}`} 
-                                        className="flex items-center gap-3 p-3 bg-green/5 rounded-xl hover:bg-green/10 transition-colors group"
-                                    >
-                                        <div className="bg-green/10 p-2 rounded-lg group-hover:bg-green/20 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-gray-800">Convidar Jogadoras</p>
-                                            <p className="text-xs text-gray-500">Adicione membros ao time</p>
-                                        </div>
-                                    </Link>
+                            {/* Card de Dica */}
+                            <div className="bg-gradient-to-br from-purple/10 to-pink/10 rounded-3xl shadow-lg p-6 border-2 border-purple/20">
+                                <div className="flex items-start gap-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div>
+                                        <h4 className="font-bold text-purple mb-2">Dica Importante</h4>
+                                        <p className="text-sm text-gray-700">
+                                            Você só pode criar um time. Escolha o nome e as cores com cuidado!
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -235,12 +281,12 @@ export default function CadastrarTime() {
                                         <label className="font-bold text-gray-700 text-sm">
                                             Nome do Time
                                         </label>
-                                        <input 
-                                            value={nome} 
-                                            onChange={handleNomeChange} 
-                                            placeholder="Digite o nome do time" 
+                                        <input
+                                            value={nome}
+                                            onChange={handleNomeChange}
+                                            placeholder="Digite o nome do time"
                                             required
-                                            className="bg-white border-2 border-gray-200 rounded-xl px-4 py-3 text-black w-full focus:outline-none focus:border-purple focus:ring-2 focus:ring-purple/20 transition-all duration-300 group-hover:border-purple/30" 
+                                            className="bg-white border-2 border-gray-200 rounded-xl px-4 py-3 text-black w-full focus:outline-none focus:border-purple focus:ring-2 focus:ring-purple/20 transition-all duration-300 group-hover:border-purple/30"
                                         />
                                     </div>
 
@@ -249,9 +295,9 @@ export default function CadastrarTime() {
                                         <label className="font-bold text-gray-700 text-sm">
                                             Descrição do Time
                                         </label>
-                                        <textarea 
-                                            rows="5" 
-                                            value={descricao} 
+                                        <textarea
+                                            rows="5"
+                                            value={descricao}
                                             onChange={handleDescricaoChange}
                                             placeholder="Descreva seu time..."
                                             required
@@ -293,12 +339,12 @@ export default function CadastrarTime() {
                                         </div>
                                         <div className="flex items-center gap-2 mt-2 p-3 bg-purple/5 rounded-xl border border-purple/20">
                                             <div className="flex gap-1">
-                                                <div 
-                                                    className="w-8 h-8 rounded-lg border-2 border-white shadow-md" 
+                                                <div
+                                                    className="w-8 h-8 rounded-lg border-2 border-white shadow-md"
                                                     style={{ backgroundColor: cor1 }}
                                                 ></div>
-                                                <div 
-                                                    className="w-8 h-8 rounded-lg border-2 border-white shadow-md" 
+                                                <div
+                                                    className="w-8 h-8 rounded-lg border-2 border-white shadow-md"
                                                     style={{ backgroundColor: cor2 }}
                                                 ></div>
                                             </div>
@@ -308,8 +354,8 @@ export default function CadastrarTime() {
 
                                     {/* Botão Salvar */}
                                     <div className="flex justify-end pt-6 border-t-2 border-gray-200">
-                                        <button 
-                                            type="submit" 
+                                        <button
+                                            type="submit"
                                             className="bg-gradient-to-r from-purple to-pink hover:from-purple-700 hover:to-pink-600 text-white rounded-xl px-8 py-4 font-bold shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

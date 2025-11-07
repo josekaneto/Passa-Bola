@@ -173,7 +173,7 @@ export default function CopasPabPage() {
 
             <ContactSection />
             <SectionCopa />
-            <Footer />
+            <Footer links={links} />
         </main>
     );
 }

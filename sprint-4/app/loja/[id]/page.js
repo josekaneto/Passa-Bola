@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import CustomAlert from "@/app/Components/CustomAlert";
 import AuthGuard from "@/app/Components/AuthGuard";
+import Footer from "@/app/Components/Footer";
+import PageBanner from "@/app/Components/PageBanner";
 
 export default function LojaPage() {
     const [loading, setLoading] = useState(true);
@@ -169,7 +171,7 @@ export default function LojaPage() {
         { label: "Times", href: `/times/${userId}` },
         { label: "Copas PAB", href: `/copasPab/${userId}` },
         { label: "Loja", href: `/loja/${userId}` },
-        { label: "Sair", href: "/", onClick: () => handleLogout() }
+        { label: "Sair", href: "/" }
     ];
 
     const addToCart = async (produto, tamanho) => {
@@ -341,16 +343,11 @@ export default function LojaPage() {
                 />
                 <Header links={links} bgClass="bg-white" src="/Logo-Preta.png" color="text-black" />
 
-            <section className="bg-gradient-to-r from-green via-pink to-purple py-20 sm:py-32 mt-5 px-4 text-center">
-                <div className="max-w-4xl mx-auto" data-aos="fade-up">
-                    <h1 className="text-4xl sm:text-6xl font-bold font-title text-white">
-                        Bem-vindo à Loja PAB
-                    </h1>
-                    <p className="mt-4 text-lg sm:text-xl text-white max-w-2xl mx-auto">
-                        Encontre os melhores equipamentos e produtos oficiais para levar seu jogo para o próximo nível.
-                    </p>
-                </div>
-            </section>
+                <PageBanner
+                    title="Loja PAB"
+                    subtitle="Encontre os melhores equipamentos e produtos oficiais para levar seu jogo para o próximo nível."
+                />
+
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col gap-6">
@@ -453,13 +450,6 @@ export default function LojaPage() {
                                 </div>
                             )}
                         </>
-                    )}
-                    {cart.length > 0 && (
-                        <div className="mt-6 p-4 bg-green/20 rounded-lg">
-                            <p className="text-lg font-bold text-black">
-                                Itens no carrinho: {cart.reduce((sum, item) => sum + item.quantidade, 0)}
-                            </p>
-                        </div>
                     )}
                 </div>
             </div>
@@ -601,6 +591,7 @@ export default function LojaPage() {
                     </div>
                 </div>
             )}
+            <Footer links={links} />
         </main>
         </AuthGuard>
     );

@@ -1,0 +1,199 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { FaArrowDown } from 'react-icons/fa';
+import Header from '@/app/Components/Header';
+import Footer from '@/app/Components/Footer';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
+import AOS from "aos";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "aos/dist/aos.css";
+import ContactSection from '@/app/Components/ContactSection';
+import SectionCopa from '@/app/Components/SectionCopa';
+import RoadmapItem from '@/app/Components/RoadmapItem'; // Importe o novo componente
+import LoadingScreen from '@/app/Components/LoadingScreen';
+import { useParams } from 'next/navigation';
+import AuthGuard from '@/app/Components/AuthGuard';
+
+const roadmapData = [
+    { id: 1, title: "Nasce um Sonho", description: "O Passa a Bola surge para dar voz e visibilidade ao futebol feminino.", isPink: true, isUp: true },
+    { id: 2, title: "Marco na Mídia", description: "Ago/2022: Parceria com o YouTube para a transmissão do Paulistão Feminino.", isPink: false, isUp: false },
+    { id: 3, title: "A Primeira Copa", description: "Abr/2023: A 1ª edição da Copa PAB une times amadores e vira realidade.", isPink: true, isUp: true },
+    { id: 4, title: "Consolidação", description: "2024: O projeto se expande com novas copas, 'Encontros PAB' e a loja oficial.", isPink: false, isUp: false },
+    { id: 5, title: "Maior do País", description: "2025: A Copa PAB se firma como o maior torneio amador feminino do país.", isPink: true, isUp: true },
+    { id: 6, title: "Próximos Capítulos", description: "2026: Expansão nacional e novas parcerias para fortalecer ainda mais o futebol feminino.", isPink: false, isUp: false }
+];
+
+export default function CopasPabPage() {
+    const [isLoading, setIsLoading] = useState(true);
+    const [userId, setUserId] = useState(null);
+    const params = useParams();
+
+    useEffect(() => {
+        AOS.init({ once: true });
+
+        // Pega o userId da URL ou do localStorage
+        const urlUserId = params?.id;
+        const storedUserId = localStorage.getItem('user_id');
+
+        if (urlUserId) {
+            setUserId(urlUserId);
+        } else if (storedUserId) {
+            setUserId(storedUserId);
+        }
+
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [params]);
+
+    const links = userId ? [
+        { label: "Início", href: `/inicioposlogin/${userId}` },
+        { label: "Perfil", href: `/perfil/${userId}` },
+        { label: "Times", href: `/times/${userId}` },
+        { label: "Copas PAB", href: `/copasPab/${userId}` },
+        { label: "Loja", href: `/loja/${userId}` },
+        { label: "Sair", href: "/" }
+    ] : [];
+
+    if (isLoading) {
+        return <LoadingScreen />;
+    }
+
+    return (
+        <AuthGuard>
+
+
+            <main className="flex wf min-h-screen flex-col bg-gray-100 text-gray-800 font-corpo overflow-x-hidden">
+                {/* 1. Seção Principal (Hero) */}
+                <section className="relative flex flex-col min-h-screen">
+                    <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="absolute top-0 left-0 w-full h-full object-cover z-0"
+                    >
+                        <source src="/video.mp4" type="video/mp4" />
+                        Seu navegador não suporta o elemento de vídeo.
+                    </video>
+                    <Header links={links} />
+                    <div className="absolute inset-0 bg-black/60"></div>
+                    <div
+                        className="w-full max-w-[80%] px-4 sm:px-6 flex flex-col justify-center items-center sm:items-start absolute top-0 left-1/2 -translate-x-1/2 h-full text-left"
+                        data-aos="fade-right"
+                        data-aos-duration="1200"
+                    >
+                        <span className="bg-pink text-white px-3 py-1 rounded-full mb-4 text-sm font-semibold" data-aos="fade-right" data-aos-delay="200">
+                            A MAIOR COPA AMADORA DO BRASIL
+                        </span>
+                        <h1 className="text-4xl sm:text-5xl font-bold font-title text-white mb-6 w-full md:w-full" data-aos="fade-right" data-aos-delay="400">
+                            Copa Passa a Bola 2025
+                        </h1>
+                        <p className="text-base sm:text-lg text-white w-full sm:w-4/5 md:w-6/12" data-aos="fade-right" data-aos-delay="600">
+                            A bola vai rolar novamente no maior palco do futebol feminino amador. Reúna seu time, mostre seu talento e venha competir pela taça mais cobiçada.
+                        </p>
+                        <Link
+                            href="/user/login"
+                            className="mt-6 bg-purple text-white font-semibold px-5 py-3 rounded-xl hover:scale-105 duration-500 transition-transform"
+                        >
+                            Inscreva-se Agora
+                        </Link>
+                    </div>
+                    <div
+                        className="absolute bottom-20 z-10 w-full flex flex-col items-center gap-2 text-white"
+                        data-aos="fade-up"
+                        data-aos-delay="1000"
+                    >
+                        <span className="text-sm animate-bounce text-green font-bold">Descubra a Jornada</span>
+                        <FaArrowDown className="animate-bounce text-green" />
+                    </div>
+                </section>
+
+                <section className="w-fit py-16 sm:py-24 bg-white">
+                    <div className="w-[80%] mx-auto px-4" data-aos="fade-up">
+                        <h2 className="text-4xl font-bold text-center text-gray-800 mb-16 font-title">De um Sonho à Realidade: A Jornada do Passa a Bola</h2>
+                        <div className="relative w-full mx-auto">
+                            {/* Linha do Tempo Central */}
+                            <div className="absolute top-0 left-1/2 w-1 h-full bg-gray-200 -translate-x-1/2 lg:top-1/2 lg:left-0 lg:w-full lg:h-1 lg:-translate-y-1/2 lg:translate-x-0"></div>
+                            <div className="relative flex flex-col lg:flex-row justify-between items-center">
+                                {roadmapData.map((item, index) => (
+                                    <RoadmapItem
+                                        key={item.id}
+                                        id={item.id}
+                                        title={item.title}
+                                        description={item.description}
+                                        isPink={item.isPink}
+                                        isUp={item.isUp}
+                                        delay={(index + 1) * 100}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="w-full bg-purple flex justify-center px-4 py-12">
+                    <div className="w-full max-w-[80%] px-4 sm:px-6 flex flex-col items-center" data-aos="fade-up" data-aos-duration="1000">
+                        <h2 className="text-4xl font-bold text-white mb-8 font-title">
+                            Junte-se a Nós na Jornada da Copa PAB!
+                        </h2>
+                        <p className="text-white max-w-2xl mb-8">
+                            Seja parte dessa nova era do futebol feminino.
+                            Acompanhe as partidas, apoie as atletas e celebre cada momento dessa incrível jornada conosco.
+                            A Copa PAB é feita por e para vocês!
+                        </p>
+
+                        <div className="w-full">
+                            <Swiper
+                                modules={[Navigation, Pagination, Autoplay]}
+                                spaceBetween={20}
+                                slidesPerView={1}
+                                breakpoints={{
+                                    640: { slidesPerView: 1, spaceBetween: 20 },
+                                    768: { slidesPerView: 1, spaceBetween: 24 },
+                                    1024: { slidesPerView: 2, spaceBetween: 30 },
+                                }}
+                                autoplay={{ delay: 2500, disableOnInteraction: true }}
+                                loop
+                                className="rounded-2xl shadow-2xl"
+                            >
+                                <SwiperSlide>
+                                    <img src="/encontro-PAB-01.jpg" alt="Torcida no estádio" className="w-full h-96 object-cover rounded-2xl" />
+                                </SwiperSlide>
+                                <SwiperSlide>
+                                    <img src="/encontro-PAB-02.jpg" alt="Futebol coletivo 2" className="w-full h-96 object-cover rounded-2xl" />
+                                </SwiperSlide>
+                                <SwiperSlide>
+                                    <img src="/encontro-PAB-03.jpg" alt="Selfie no campo" className="w-full h-96 object-cover rounded-2xl" />
+                                </SwiperSlide>
+                                <SwiperSlide>
+                                    <img src="/encontro-PAB-04.jpg" alt="Selfie no campo" className="w-full h-96 object-cover rounded-2xl" />
+                                </SwiperSlide>
+                            </Swiper>
+                        </div>
+
+                        <div className="flex justify-center mt-8 w-full">
+                            <Link
+                                href="/user/cadastro"
+                                className="bg-pink text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:scale-105 transition-transform duration-500"
+                            >
+                                Cadastre-se agora!
+                            </Link>
+                        </div>
+                    </div>
+                </section>
+
+                <ContactSection />
+                <SectionCopa />
+                <Footer links={links} />
+            </main>
+        </AuthGuard>
+    );
+}

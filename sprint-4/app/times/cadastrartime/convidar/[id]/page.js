@@ -11,6 +11,7 @@ import SectionContainer from "@/app/Components/SectionContainer";
 import VoltarButton from "@/app/Components/VoltarButton";
 import Input from "@/app/Components/Input";
 import CustomAlert from "@/app/Components/CustomAlert";
+import PageBanner from "@/app/Components/PageBanner";
 
 
 export default function ConvidarJogadoras() {
@@ -196,6 +197,11 @@ export default function ConvidarJogadoras() {
                 onClose={() => setAlert({ show: false, message: "", type: "info" })} 
             />
             <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
+
+            <PageBanner
+                title="Convidar Jogadoras"
+                subtitle="Convide jogadoras para seu time e monte o elenco perfeito"
+            />
             
             <MainContainer>
                 <div className="w-full max-w-7xl mx-auto px-4">

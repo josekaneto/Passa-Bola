@@ -118,7 +118,7 @@ export async function POST(request) {
         preco: 499.90,
         imagem: "/chuteira.avif",
         categoria: "Chuteiras",
-        tamanhos: ['34', '35', '36', '37', '38', '39', '40', '41', '42'],
+        tamanhos: ['34', '35', '36', '37', '38'],
         descricao: "Chuteira profissional para futebol de alto desempenho.",
         estoque: 50,
         isActive: true,

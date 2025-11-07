@@ -6,12 +6,12 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import MainContainer from "@/app/Components/MainContainer";
-import SectionContainer from "@/app/Components/SectionContainer";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import CustomAlert from "@/app/Components/CustomAlert";
 import CustomConfirm from "@/app/Components/CustomConfirm";
 import AuthGuard from "@/app/Components/AuthGuard";
 import TeamChat from "@/app/Components/TeamChat";
+import PageBanner from "@/app/Components/PageBanner";
 
 export default function MeuTime() {
 	const { id } = useParams();
@@ -24,19 +24,20 @@ export default function MeuTime() {
 	const [isCaptain, setIsCaptain] = useState(false);
 	const [isMember, setIsMember] = useState(false);
 	const [hasJoinRequest, setHasJoinRequest] = useState(false);
+	const [teamNotFound, setTeamNotFound] = useState(false);
 	const [editForm, setEditForm] = useState({ nome: "", descricao: "", cor1: "#3b82f6", cor2: "#d1d5db", imagem: null });
 	const [preview, setPreview] = useState(null);
 	const [alert, setAlert] = useState({ show: false, message: "", type: "info" });
 	const [confirm, setConfirm] = useState({ show: false, message: "", onConfirm: null });
 
 	const links = [
-        { label: "Inicio", href: userId ? `/inicioposlogin/${userId}` : '/' },
-        { label: "Perfil", href: userId ? `/perfil/${userId}` : '/' },
-        { label: "Times", href: userId ? `/times/${userId}` : '/times' },
-		{ label: "Loja", href: userId ? `/loja/${userId}` : '/loja' },
-        { label: "Copas PAB", href: userId ? `/copasPab/${userId}` : '/copasPab' },
-        { label: "Sair", href: "/" }
-    ];
+		{ label: "Inicio", href: `/inicioposlogin/${userId}`},
+		{ label: "Perfil", href: `/perfil/${userId}`},
+		{ label: "Times", href: `/times/${userId}`},
+		{ label: "Loja", href:`/loja/${userId}`},
+		{ label: "Copas PAB", href: `/copasPab/${userId}`},
+		{ label: "Sair", href: "/" }
+	];
 
 	useEffect(() => {
 		const fetchTime = async () => {
@@ -74,16 +75,23 @@ export default function MeuTime() {
 						'Authorization': `Bearer ${authToken}`
 					}
 				});
+
+				if (response.status === 404) {
+					setTeamNotFound(true);
+					setLoading(false);
+					return;
+				}
+
 				if (response.ok) {
 					const data = await response.json();
 					const team = data.team;
-					setTime({ 
-						nome: team.nome, 
-						descricao: team.descricao, 
-						cor1: team.cor1 || "#3b82f6", 
-						cor2: team.cor2 || "#d1d5db", 
-						id: team.id, 
-						imagem: team.imagem || null 
+					setTime({
+						nome: team.nome,
+						descricao: team.descricao,
+						cor1: team.cor1 || "#3b82f6",
+						cor2: team.cor2 || "#d1d5db",
+						id: team.id,
+						imagem: team.imagem || null
 					});
 					setJogadoras(team.members || []);
 					setEditForm({
@@ -125,6 +133,7 @@ export default function MeuTime() {
 				}
 			} catch (error) {
 				console.error('Error fetching team:', error);
+				setTeamNotFound(true);
 			}
 			setLoading(false);
 		};
@@ -135,7 +144,7 @@ export default function MeuTime() {
 	const handleColorChange = async (corKey, value) => {
 		const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
 		if (!authToken) return;
-		
+
 		setTime(prev => {
 			const updated = { ...prev, [corKey]: value };
 			// Atualiza MongoDB
@@ -230,10 +239,10 @@ export default function MeuTime() {
 	const handleLeaveTeam = () => {
 		// Check if user is captain
 		if (isCaptain) {
-			setAlert({ 
-				show: true, 
-				message: 'Você não pode sair do time enquanto for a capitã. Transfira a capitania ou exclua o time.', 
-				type: 'error' 
+			setAlert({
+				show: true,
+				message: 'Você não pode sair do time enquanto for a capitã. Transfira a capitania ou exclua o time.',
+				type: 'error'
 			});
 			return;
 		}
@@ -314,13 +323,49 @@ export default function MeuTime() {
 		return <LoadingScreen />;
 	}
 
+	// Team Not Found Screen
+	if (teamNotFound) {
+		return (
+			<AuthGuard>
+				<>
+					<Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
+					<PageBanner
+						title="Time não encontrado"
+						subtitle="O time que você está procurando não existe ou foi removido"
+					/>
+					<MainContainer>
+						<div className="w-full max-w-2xl mx-auto px-4 py-12">
+							<div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+								<div className="mb-6">
+									<svg className="w-24 h-24 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+									</svg>
+								</div>
+								<h2 className="text-3xl font-bold text-gray-700 mb-4">Nenhum time cadastrado</h2>
+								<p className="text-gray-500 mb-8 text-lg">
+									Você ainda não tem um time cadastrado. Crie seu time agora e comece a jogar!
+								</p>
+								<button
+									onClick={() => router.push(`/times/${userId}`)}
+									className="bg-gradient-to-r from-purple via-pink to-green text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+								>
+									Voltar para Times
+								</button>
+							</div>
+						</div>
+					</MainContainer>
+				</>
+			</AuthGuard>
+		);
+	}
+
 	// Icon Components
 	const TeamIcon = () => (
 		<svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
 		</svg>
 	);
-	
+
 	const ColorIcon = () => (
 		<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
@@ -357,344 +402,319 @@ export default function MeuTime() {
 		</svg>
 	);
 
+	// Determine banner title and subtitle
+	const bannerTitle = isCaptain ? "Meu Time" : time.nome;
+	const bannerSubtitle = isCaptain
+		? "Gerencie seu time e confira todas as informações dos membros"
+		: time.descricao || "Detalhes do time";
+
 	return (
-        <AuthGuard>
-            <>
-                <CustomAlert 
-                    show={alert.show} 
-                    message={alert.message} 
-                    type={alert.type} 
-                    onClose={() => setAlert({ show: false, message: "", type: "info" })} 
-                />
-                <CustomConfirm
-                    show={confirm.show}
-                    message={confirm.message}
-                    onConfirm={confirm.onConfirm || (() => {})}
-                    onCancel={() => setConfirm({ show: false, message: "", onConfirm: null })}
-                />
-                <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-		
-		<MainContainer>
-			<div className="w-full max-w-7xl mx-auto px-4">
-				{/* Banner Header */}
-				<div className="bg-gradient-to-r from-purple via-pink to-green rounded-2xl p-8 mb-6 shadow-lg">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-4">
-							<TeamIcon />
-							<h1 className="text-4xl font-bold text-white">Meu Time</h1>
-						</div>
-						<VoltarButton 
-							textColor="text-white" 
-							hoverColor="hover:text-green"
-							onClick={async (e) => {
-							e?.preventDefault?.();
-							try {
-								if (userId) {
-									router.push(`/times/${userId}`);
-									return;
-								}
-								const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-								if (authToken) {
-									try {
-										const res = await fetch('/api/auth/me', {
-											headers: {
-												'Authorization': `Bearer ${authToken}`
-											}
-										});
-										const data = await res.json();
-										if (data.user && data.user.id) {
-											router.push(`/times/${data.user.id}`);
-										} else {
-											setAlert({ show: true, message: 'Erro: ID do usuário não encontrado', type: 'error' });
-										}
-									} catch (fetchError) {
-										setAlert({ show: true, message: 'Erro ao buscar dados do usuário: ' + fetchError.message, type: 'error' });
-									}
-								} else {
-									setAlert({ show: true, message: 'Erro: Token de autenticação não encontrado', type: 'error' });
-								}
-							} catch (error) {
-								setAlert({ show: true, message: 'Erro ao navegar: ' + error.message, type: 'error' });
-							}
-						}} />
-					</div>
-				</div>
+		<AuthGuard>
+			<>
+				<CustomAlert
+					show={alert.show}
+					message={alert.message}
+					type={alert.type}
+					onClose={() => setAlert({ show: false, message: "", type: "info" })}
+				/>
+				<CustomConfirm
+					show={confirm.show}
+					message={confirm.message}
+					onConfirm={confirm.onConfirm || (() => { })}
+					onCancel={() => setConfirm({ show: false, message: "", onConfirm: null })}
+				/>
+				<Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
 
-				{/* Main Content */}
-				<div className="flex flex-col lg:flex-row gap-6">
-					{/* Left Sidebar */}
-					<div className="lg:w-80 flex-shrink-0 space-y-6">
-						{/* Team Logo Card */}
-						<div className="bg-white rounded-2xl shadow-lg p-6">
-							<div className="flex flex-col items-center gap-4">
-								<h2 className="text-2xl font-bold text-pink text-center">{time.nome || "Time"}</h2>
-								{time.imagem ? (
-									<img src={time.imagem} alt="Logo Time" className="w-32 h-32 object-cover rounded-full border-4 border-purple shadow-lg" />
-								) : (
-									<img src="/womensTeams.png" alt="Logo Time" className="w-32 h-32 object-cover rounded-full border-4 border-purple shadow-lg" />
-								)}
-							</div>
+				<PageBanner
+					title={bannerTitle}
+					subtitle={bannerSubtitle}
+				/>
+
+
+
+				<MainContainer>
+					<div className="w-full max-w-7xl mx-auto px-4">
+
+						<div className="flex justify-end mb-6" data-aos="fade-right">
+							<VoltarButton onClick={() => router.push(`/times/${userId}`)} />
 						</div>
 
-						{/* Team Info Card */}
-						<div className="bg-white rounded-2xl shadow-lg p-6 space-y-4">
-							<div className="flex items-center gap-2 text-purple">
-								<ColorIcon />
-								<h3 className="font-bold text-lg">Cores do Time</h3>
-							</div>
-							<div className="flex gap-4 justify-center">
-								<div className="flex flex-col items-center gap-2">
-									<div 
-										className="w-16 h-16 rounded-lg shadow-md border-2 border-gray-300"
-										style={{ backgroundColor: time.cor1 }}
-									></div>
-									<span className="text-xs text-gray-600 font-mono">{time.cor1}</span>
-									<input 
-										type="color" 
-										value={time.cor1} 
-										onChange={e => handleColorChange("cor1", e.target.value)} 
-										className="w-10 h-10 rounded cursor-pointer border-2 border-gray-300"
-										disabled={!isCaptain}
-									/>
-								</div>
-								<div className="flex flex-col items-center gap-2">
-									<div 
-										className="w-16 h-16 rounded-lg shadow-md border-2 border-gray-300"
-										style={{ backgroundColor: time.cor2 }}
-									></div>
-									<span className="text-xs text-gray-600 font-mono">{time.cor2}</span>
-									<input 
-										type="color" 
-										value={time.cor2} 
-										onChange={e => handleColorChange("cor2", e.target.value)} 
-										className="w-10 h-10 rounded cursor-pointer border-2 border-gray-300"
-										disabled={!isCaptain}
-									/>
-								</div>
-							</div>
-							<div className="pt-4 border-t border-gray-200 text-center">
-								<span className="text-gray-700 font-semibold">Total de Jogadoras</span>
-								<div className="text-3xl font-bold text-purple mt-2">
-									{jogadoras.length}<span className="text-gray-400">/{time.maxMembers || 15}</span>
-								</div>
-							</div>
-						</div>
-
-						{/* Quick Actions Card */}
-						<div className="bg-white rounded-2xl shadow-lg p-6 space-y-3">
-							<h3 className="font-bold text-lg text-purple mb-4">Ações Rápidas</h3>
-							
-							<Link 
-								href={`/times/cadastrartime/convidar/${id}`}
-								className="flex items-center gap-3 p-3 rounded-lg hover:bg-purple/10 transition-colors text-purple font-semibold"
-							>
-								<InviteIcon />
-								<span>Convidar Jogadoras</span>
-							</Link>
-
-							<Link 
-								href={`/times/historico/${id}`}
-								className="flex items-center gap-3 p-3 rounded-lg hover:bg-green/10 transition-colors text-green font-semibold"
-							>
-								<HistoryIcon />
-								<span>Ver Histórico</span>
-							</Link>
-
-							{isCaptain && (
-								<>
-									<button 
-										onClick={() => setIsEditing(!isEditing)}
-										className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors text-blue-600 font-semibold"
-									>
-										<EditIcon />
-										<span>{isEditing ? 'Cancelar Edição' : 'Editar Time'}</span>
-									</button>
-
-									<button 
-										onClick={handleDeleteTeam}
-										className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 transition-colors text-red-600 font-semibold"
-									>
-										<DeleteIcon />
-										<span>Excluir Time</span>
-									</button>
-								</>
-							)}
-
-							{isMember && (
-								<button 
-									onClick={handleLeaveTeam}
-									className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 transition-colors text-red-600 font-semibold"
-								>
-									<ExitIcon />
-									<span>Sair do Time</span>
-								</button>
-							)}
-						</div>
-					</div>
-
-					{/* Main Content Area */}
-					<div className="flex-1 space-y-6">
-						{/* Join Request Button - only show if user is not captain, not a member, and hasn't already requested */}
-						{!isCaptain && !isMember && (
-							<div className="bg-white rounded-2xl shadow-lg p-6">
-								<button
-									onClick={handleRequestToJoin}
-									disabled={hasJoinRequest}
-									className={`w-full px-6 py-4 rounded-xl font-bold text-lg shadow-md transition-all duration-200 ${
-										hasJoinRequest
-											? 'bg-gray-400 text-white cursor-not-allowed'
-											: 'bg-gradient-to-r from-pink to-purple text-white hover:shadow-lg hover:scale-[1.02]'
-									}`}
-								>
-									{hasJoinRequest ? 'Solicitação Enviada' : 'Solicitar para Entrar'}
-								</button>
-							</div>
-						)}
-
-						{/* Edit Form */}
-						{isEditing && isCaptain && (
-							<div className="bg-white rounded-2xl shadow-lg p-6">
-								<h3 className="text-2xl font-bold text-purple mb-6 flex items-center gap-2">
-									<EditIcon />
-									Editar Time
-								</h3>
-								<form onSubmit={handleEditSubmit} className="space-y-6">
-									<div className="space-y-2">
-										<label className="font-semibold text-gray-700">Nome do Time:</label>
-										<input
-											type="text"
-											value={editForm.nome}
-											onChange={(e) => setEditForm({ ...editForm, nome: e.target.value })}
-											className="w-full border rounded-lg px-4 py-3 text-black bg-white border-gray-400 focus:border-pink focus:outline-none"
-											required
-										/>
-									</div>
-
-									<div className="space-y-2">
-										<label className="font-semibold text-gray-700">Descrição:</label>
-										<textarea
-											rows="4"
-											value={editForm.descricao}
-											onChange={(e) => setEditForm({ ...editForm, descricao: e.target.value })}
-											className="w-full border rounded-lg px-4 py-3 text-black bg-white resize-none border-gray-400 focus:border-pink focus:outline-none"
-											required
-										/>
-									</div>
-
-									<div className="space-y-2">
-										<label className="font-semibold text-gray-700">Cores:</label>
-										<div className="flex gap-6">
-											<div className="flex flex-col items-center gap-2">
-												<label className="text-sm text-gray-600">Cor Principal</label>
-												<input
-													type="color"
-													value={editForm.cor1}
-													onChange={(e) => setEditForm({ ...editForm, cor1: e.target.value })}
-													className="w-16 h-16 rounded-lg border-2 border-gray-300 cursor-pointer"
-												/>
-											</div>
-											<div className="flex flex-col items-center gap-2">
-												<label className="text-sm text-gray-600">Cor Secundária</label>
-												<input
-													type="color"
-													value={editForm.cor2}
-													onChange={(e) => setEditForm({ ...editForm, cor2: e.target.value })}
-													className="w-16 h-16 rounded-lg border-2 border-gray-300 cursor-pointer"
-												/>
-											</div>
-										</div>
-									</div>
-
-									<div className="space-y-2">
-										<label className="font-semibold text-gray-700">Imagem:</label>
-										<div className="flex items-center gap-4">
-											{preview && (
-												<img src={preview} alt="Preview" className="w-24 h-24 object-cover rounded-full border-4 border-purple shadow-md" />
-											)}
-											<label className="cursor-pointer">
-												<input
-													type="file"
-													accept="image/*"
-													onChange={handleImageChange}
-													className="hidden"
-												/>
-												<span className="bg-gradient-to-r from-purple to-pink text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all font-semibold inline-block">
-													Selecionar Imagem
-												</span>
-											</label>
-										</div>
-									</div>
-
-									<div className="flex gap-3 justify-end pt-4">
-										<button
-											type="button"
-											onClick={() => setIsEditing(false)}
-											className="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
-										>
-											Cancelar
-										</button>
-										<button
-											type="submit"
-											className="bg-gradient-to-r from-purple to-pink text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all font-semibold"
-										>
-											Salvar Alterações
-										</button>
-									</div>
-								</form>
-							</div>
-						)}
-
-						{/* Players List */}
-						<div className="bg-white rounded-2xl shadow-lg p-6">
-							<div className="flex items-center justify-between mb-6">
-								<h3 className="text-2xl font-bold text-purple flex items-center gap-2">
-									<TeamIcon />
-									Jogadoras do Time
-								</h3>
-								<span className="bg-purple/10 text-purple px-4 py-2 rounded-full font-bold">
-									{jogadoras.length} {jogadoras.length === 1 ? 'jogadora' : 'jogadoras'}
-								</span>
-							</div>
-							
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">
-								{jogadoras.length === 0 ? (
-									<div className="col-span-full text-center py-12">
-										<div className="text-gray-400 mb-3">
-											<svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-											</svg>
-										</div>
-										<span className="text-gray-500 text-lg">Nenhuma jogadora no time ainda</span>
-										{isCaptain && (
-											<p className="text-gray-400 mt-2">Use o botão &quot;Convidar Jogadoras&quot; para adicionar membros</p>
+						{/* Main Content */}
+						<div className="flex flex-col lg:flex-row gap-6">
+							{/* Left Sidebar */}
+							<div className="lg:w-80 flex-shrink-0 space-y-6">
+								{/* Team Logo Card */}
+								<div className="bg-white rounded-2xl shadow-lg p-6">
+									<div className="flex flex-col items-center gap-4">
+										<h2 className="text-2xl font-bold text-pink text-center">{time.nome || "Time"}</h2>
+										{time.imagem ? (
+											<img src={time.imagem} alt="Logo Time" className="w-32 h-32 object-cover rounded-full border-4 border-purple shadow-lg" />
+										) : (
+											<img src="/time-padrao.png" alt="Logo Time" className="w-32 h-32 object-cover rounded-full border-4 border-purple shadow-lg" />
 										)}
 									</div>
-								) : (
-									jogadoras.map((j, idx) => (
-										<JogadoraCard 
-											key={j.userId || idx} 
-											nomeCompleto={j.nomeCompleto} 
-											pernaDominante={j.pernaDominante || ''} 
-											posicao={j.posicao}
-											userId={j.userId}
-											onViewProfile={(userId) => router.push(`/perfil/${userId}`)}
-										/>
-									))
-								)}
+								</div>
+
+								{/* Team Info Card */}
+								<div className="bg-white rounded-2xl shadow-lg p-6 space-y-4">
+									<div className="flex items-center gap-2 text-purple">
+										<ColorIcon />
+										<h3 className="font-bold text-lg">Cores do Time</h3>
+									</div>
+									<div className="flex gap-4 justify-center">
+										<div className="flex flex-col items-center gap-2">
+											<div
+												className="w-16 h-16 rounded-lg shadow-md border-2 border-gray-300"
+												style={{ backgroundColor: time.cor1 }}
+											></div>
+											<span className="text-xs text-gray-600 font-mono">{time.cor1}</span>
+											{isCaptain && (
+												<input
+													type="color"
+													value={time.cor1}
+													onChange={e => handleColorChange("cor1", e.target.value)}
+													className="w-10 h-10 rounded cursor-pointer border-2 border-gray-300"
+												/>
+											)}
+										</div>
+										<div className="flex flex-col items-center gap-2">
+											<div
+												className="w-16 h-16 rounded-lg shadow-md border-2 border-gray-300"
+												style={{ backgroundColor: time.cor2 }}
+											></div>
+											<span className="text-xs text-gray-600 font-mono">{time.cor2}</span>
+											{isCaptain && (
+												<input
+													type="color"
+													value={time.cor2}
+													onChange={e => handleColorChange("cor2", e.target.value)}
+													className="w-10 h-10 rounded cursor-pointer border-2 border-gray-300"
+												/>
+											)}
+										</div>
+									</div>
+									<div className="pt-4 border-t border-gray-200 text-center">
+										<span className="text-gray-700 font-semibold">Total de Jogadoras</span>
+										<div className="text-3xl font-bold text-purple mt-2">
+											{jogadoras.length}<span className="text-gray-400">/{time.maxMembers || 15}</span>
+										</div>
+									</div>
+								</div>
+
+								{/* Quick Actions Card */}
+								<div className="bg-white rounded-2xl shadow-lg p-6 space-y-3">
+									<h3 className="font-bold text-lg text-purple mb-4">Ações Rápidas</h3>
+
+									{isCaptain && (
+										<>
+											<Link
+												href={`/times/cadastrartime/convidar/${id}`}
+												className="flex items-center gap-3 p-3 rounded-lg hover:bg-purple/10 transition-colors text-purple font-semibold"
+											>
+												<InviteIcon />
+												<span>Convidar Jogadoras</span>
+											</Link>
+
+											<Link
+												href={`/times/historico/${id}`}
+												className="flex items-center gap-3 p-3 rounded-lg hover:bg-green/10 transition-colors text-green font-semibold"
+											>
+												<HistoryIcon />
+												<span>Ver Histórico</span>
+											</Link>
+
+											<button
+												onClick={() => setIsEditing(!isEditing)}
+												className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors text-blue-600 font-semibold"
+											>
+												<EditIcon />
+												<span>{isEditing ? 'Cancelar Edição' : 'Editar Time'}</span>
+											</button>
+
+											<button
+												onClick={handleDeleteTeam}
+												className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 transition-colors text-red-600 font-semibold"
+											>
+												<DeleteIcon />
+												<span>Excluir Time</span>
+											</button>
+										</>
+									)}
+
+									{isMember && !isCaptain && (
+										<button
+											onClick={handleLeaveTeam}
+											className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 transition-colors text-red-600 font-semibold"
+										>
+											<ExitIcon />
+											<span>Sair do Time</span>
+										</button>
+									)}
+								</div>
 							</div>
+
+							{/* Main Content Area */}
+							<div className="flex-1 space-y-6">
+								{/* Join Request Button - only show if user is not captain, not a member, and hasn't already requested */}
+								{!isCaptain && !isMember && (
+									<div className="bg-white rounded-2xl shadow-lg p-6">
+										<button
+											onClick={handleRequestToJoin}
+											disabled={hasJoinRequest}
+											className={`w-full px-6 py-4 rounded-xl font-bold text-lg shadow-md transition-all duration-200 ${hasJoinRequest
+												? 'bg-gray-400 text-white cursor-not-allowed'
+												: 'bg-gradient-to-r from-pink to-purple text-white hover:shadow-lg hover:scale-[1.02]'
+												}`}
+										>
+											{hasJoinRequest ? 'Solicitação Enviada' : 'Solicitar para Entrar'}
+										</button>
+									</div>
+								)}
+
+								{/* Edit Form */}
+								{isEditing && isCaptain && (
+									<div className="bg-white rounded-2xl shadow-lg p-6">
+										<h3 className="text-2xl font-bold text-purple mb-6 flex items-center gap-2">
+											<EditIcon />
+											Editar Time
+										</h3>
+										<form onSubmit={handleEditSubmit} className="space-y-6">
+											<div className="space-y-2">
+												<label className="font-semibold text-gray-700">Nome do Time:</label>
+												<input
+													type="text"
+													value={editForm.nome}
+													onChange={(e) => setEditForm({ ...editForm, nome: e.target.value })}
+													className="w-full border rounded-lg px-4 py-3 text-black bg-white border-gray-400 focus:border-pink focus:outline-none"
+													required
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<label className="font-semibold text-gray-700">Descrição:</label>
+												<textarea
+													rows="4"
+													value={editForm.descricao}
+													onChange={(e) => setEditForm({ ...editForm, descricao: e.target.value })}
+													className="w-full border rounded-lg px-4 py-3 text-black bg-white resize-none border-gray-400 focus:border-pink focus:outline-none"
+													required
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<label className="font-semibold text-gray-700">Cores:</label>
+												<div className="flex gap-6">
+													<div className="flex flex-col items-center gap-2">
+														<label className="text-sm text-gray-600">Cor Principal</label>
+														<input
+															type="color"
+															value={editForm.cor1}
+															onChange={(e) => setEditForm({ ...editForm, cor1: e.target.value })}
+															className="w-16 h-16 rounded-lg border-2 border-gray-300 cursor-pointer"
+														/>
+													</div>
+													<div className="flex flex-col items-center gap-2">
+														<label className="text-sm text-gray-600">Cor Secundária</label>
+														<input
+															type="color"
+															value={editForm.cor2}
+															onChange={(e) => setEditForm({ ...editForm, cor2: e.target.value })}
+															className="w-16 h-16 rounded-lg border-2 border-gray-300 cursor-pointer"
+														/>
+													</div>
+												</div>
+											</div>
+
+											<div className="space-y-2">
+												<label className="font-semibold text-gray-700">Imagem:</label>
+												<div className="flex items-center gap-4">
+													{preview && (
+														<img src={preview} alt="Preview" className="w-24 h-24 object-cover rounded-full border-4 border-purple shadow-md" />
+													)}
+													<label className="cursor-pointer">
+														<input
+															type="file"
+															accept="image/*"
+															onChange={handleImageChange}
+															className="hidden"
+														/>
+														<span className="bg-gradient-to-r from-purple to-pink text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all font-semibold inline-block">
+															Selecionar Imagem
+														</span>
+													</label>
+												</div>
+											</div>
+
+											<div className="flex gap-3 justify-end pt-4">
+												<button
+													type="button"
+													onClick={() => setIsEditing(false)}
+													className="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
+												>
+													Cancelar
+												</button>
+												<button
+													type="submit"
+													className="bg-gradient-to-r from-purple to-pink text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all font-semibold"
+												>
+													Salvar Alterações
+												</button>
+											</div>
+										</form>
+									</div>
+								)}
+
+								{/* Players List */}
+								<div className="bg-white rounded-2xl shadow-lg p-6">
+									<div className="flex items-center justify-between mb-6">
+										<h3 className="text-2xl font-bold text-purple flex items-center gap-2">
+											<TeamIcon />
+											Jogadoras do Time
+										</h3>
+										<span className="bg-purple/10 text-purple px-4 py-2 rounded-full font-bold">
+											{jogadoras.length} {jogadoras.length === 1 ? 'jogadora' : 'jogadoras'}
+										</span>
+									</div>
+
+									<div className="grid grid-cols-1 gap-4 max-h-[400px] overflow-y-auto pr-2">
+										{jogadoras.length === 0 ? (
+											<div className="col-span-full text-center py-12">
+												<div className="text-gray-400 mb-3">
+													<svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+													</svg>
+												</div>
+												<span className="text-gray-500 text-lg">Nenhuma jogadora no time ainda</span>
+												{isCaptain && (
+													<p className="text-gray-400 mt-2">Use o botão &quot;Convidar Jogadoras&quot; para adicionar membros</p>
+												)}
+											</div>
+										) : (
+											jogadoras.map((j, idx) => (
+												<JogadoraCard
+													key={j.userId || idx}
+													nomeCompleto={j.nomeCompleto}
+													pernaDominante={j.pernaDominante || ''}
+													posicao={j.posicao}
+													userId={j.userId}
+													onViewProfile={(userId) => router.push(`/perfil/${userId}`)}
+												/>
+											))
+										)}
+									</div>
+								</div>
+							</div>
+
+							{/* Chat Section - Right side - Only visible to team members */}
+							{isMember && (
+								<div className="lg:w-96 flex-shrink-0">
+									<TeamChat teamId={id} userId={userId} />
+								</div>
+							)}
 						</div>
 					</div>
-
-					{/* Chat Section - Right side - Only visible to team members */}
-					{isMember && (
-						<div className="lg:w-96 flex-shrink-0">
-							<TeamChat teamId={id} userId={userId} />
-						</div>
-					)}
-				</div>
-			</div>
-		</MainContainer>
-            </>
-        </AuthGuard>
+				</MainContainer>
+			</>
+		</AuthGuard>
 	);
 }

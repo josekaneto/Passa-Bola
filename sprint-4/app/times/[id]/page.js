@@ -7,11 +7,12 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import AuthGuard from "@/app/Components/AuthGuard";
-import MainContainer from "@/app/Components/MainContainer";
-import SectionContainer from "@/app/Components/SectionContainer";
+import PageBanner from "@/app/Components/PageBanner";
+
 export default function PaginaUsuario() {
 
     const { id: usuarioId } = useParams();
+    const router = useRouter();
     const links = [
         { label: "Inicio", href: `/inicioposlogin/${usuarioId}` },
         { label: "Perfil", href: `/perfil/${usuarioId}` },
@@ -22,6 +23,7 @@ export default function PaginaUsuario() {
     ];
     const [loading, setLoading] = useState(true);
     const [times, setTimes] = useState([]);
+    const [myTeamId, setMyTeamId] = useState(null);
 
     // Função para mascarar descrição por caracteres
     function mascaraDescricao(descricao) {
@@ -33,7 +35,6 @@ export default function PaginaUsuario() {
         return descricao;
     }
 
-    const router = useRouter();
     useEffect(() => {
         const fetchTimes = async () => {
             setLoading(true);
@@ -43,19 +44,46 @@ export default function PaginaUsuario() {
                 return;
             }
             try {
-                const response = await fetch('/api/teams', {
+                // Fetch user data to get their team
+                const userResponse = await fetch('/api/auth/me', {
                     headers: {
                         'Authorization': `Bearer ${authToken}`
                     }
                 });
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Fetched teams:', data.teams);
-                    setTimes(data.teams || []);
-                } else {
-                    const errorData = await response.json().catch(() => ({}));
-                    console.error('Error fetching teams:', errorData);
-                    setTimes([]);
+                
+                if (userResponse.ok) {
+                    const userData = await userResponse.json();
+                    console.log('User data:', userData);
+                    
+                    // Fetch all teams
+                    const response = await fetch('/api/teams', {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('Fetched teams:', data.teams);
+                        setTimes(data.teams || []);
+                        
+                        // Find the team where user is captain or member
+                        const userTeam = data.teams.find(team => 
+                            team.captainId === userData.user.id || 
+                            team.members?.some(member => member.userId === userData.user.id)
+                        );
+                        
+                        if (userTeam) {
+                            console.log('User team found:', userTeam);
+                            setMyTeamId(userTeam.id);
+                        } else {
+                            console.log('User has no team');
+                        }
+                    } else {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('Error fetching teams:', errorData);
+                        setTimes([]);
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching teams:', error);
@@ -69,22 +97,16 @@ export default function PaginaUsuario() {
     if (loading) {
         return <LoadingScreen />;
     }
+
     return (
         <AuthGuard>
             <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-green-50">
                 <Header links={links} bgClass="bg-white" src="/Logo-preta.png" color="text-black" />
-                
-                {/* Banner/Header Section */}
-                <div className="w-full bg-gradient-to-r from-purple via-pink to-green py-12 px-4 shadow-lg" data-aos="fade-down">
-                    <div className="max-w-7xl mx-auto text-center">
-                        <h1 className="text-4xl md:text-5xl font-bold font-title text-white mb-3 drop-shadow-lg">
-                            Times da Copa PAB
-                        </h1>
-                        <p className="text-lg md:text-xl text-white/90">
-                            Encontre um time ou crie o seu próprio!
-                        </p>
-                    </div>
-                </div>
+
+                <PageBanner
+                    title="Times da Copa PAB"
+                    subtitle="Encontre um time ou crie o seu próprio!"
+                />
 
                 <div className="w-full max-w-7xl mx-auto px-4 py-10">
                     {/* Cards de Ações Rápidas */}
@@ -106,22 +128,38 @@ export default function PaginaUsuario() {
                             </div>
                         </Link>
 
-                        <Link 
-                            href={`/times/meutime/${usuarioId}`}
-                            className="bg-white rounded-2xl shadow-lg p-6 border-2 border-pink/20 hover:border-pink hover:shadow-xl transition-all duration-300 transform hover:scale-105 group"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="bg-pink/10 p-3 rounded-xl group-hover:bg-pink/20 transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
+                        {myTeamId ? (
+                            <Link 
+                                href={`/times/meutime/${myTeamId}`}
+                                className="bg-white rounded-2xl shadow-lg p-6 border-2 border-pink/20 hover:border-pink hover:shadow-xl transition-all duration-300 transform hover:scale-105 group"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="bg-pink/10 p-3 rounded-xl group-hover:bg-pink/20 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-pink font-title">Meu Time</h3>
+                                        <p className="text-sm text-gray-600">Acesse seu time</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-pink font-title">Meu Time</h3>
-                                    <p className="text-sm text-gray-600">Acesse seu time</p>
+                            </Link>
+                        ) : (
+                            <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-200 opacity-50 cursor-not-allowed">
+                                <div className="flex items-center gap-4">
+                                    <div className="bg-gray-100 p-3 rounded-xl">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-400 font-title">Meu Time</h3>
+                                        <p className="text-sm text-gray-500">Você não tem um time</p>
+                                    </div>
                                 </div>
                             </div>
-                        </Link>
+                        )}
 
                         <Link 
                             href={`/times/chaveamento/${usuarioId}`}
@@ -185,7 +223,7 @@ export default function PaginaUsuario() {
                                         key={time.id || idx}
                                         nome={time.nome}
                                         descricao={mascaraDescricao(time.descricao)}
-                                        imagem={time.imagem ? time.imagem : "/time-feminino.png"}
+                                        imagem={time.imagem ? time.imagem : "/time_padrao.png"}
                                         membros={`${time.memberCount || 0}/${time.maxMembers || 15}`}
                                         link={`/times/meutime/${time.id}`}
                                     />

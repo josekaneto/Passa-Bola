@@ -92,7 +92,7 @@ export default function Home() {
           <ProfileSection
             src="/Ale.jpeg"
             alt="Ale Xavier"
-            text="Ale Xavier é referência quando o assunto é futebol e representatividade feminina na mídia esportiva. Comunicadora nata, Ale conquistou o público com seu jeito autêntico, didático e engajado, tornando-se uma das principais influenciadoras do segmento. Sua trajetória inspira novas gerações de mulheres a ocuparem espaços de destaque no esporte brasileiro. Além disso, Ale é reconhecida por sua atuação em projetos sociais ligados ao futebol e por incentivar o debate sobre igualdade de gênero no esporte. Sua voz é símbolo de transformação e inspiração."
+            text="Ale Xavier é uma das vozes mais influentes do jornalismo esportivo brasileiro. Comunicadora autêntica e engajada, inspira novas gerações com sua paixão pelo futebol e pela representatividade feminina. Reconhecida por sua atuação em projetos sociais e defesa da igualdade de gênero, Ale transforma o esporte em um espaço de inclusão, inspiração e protagonismo para as mulheres."
           />
         </div>
       </section>
@@ -122,7 +122,7 @@ export default function Home() {
 
       <ContactSection />
       <SectionCopa />
-      <Footer  />
+      <Footer links={links} />
     </main>
   );
 }
