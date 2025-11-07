@@ -39,22 +39,23 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchNoticias() {
-      try {
-        setLoadingNoticias(true);
-        const response = await fetch('https://newsapi.org/v2/everything?q=Women-Super-League&apiKey=30939f006bd6433e930278b2aaa79a09');
-        const data = await response.json();
+        try {
+            setLoadingNoticias(true);
+            // Mudança aqui: usar a API Route ao invés da API externa diretamente
+            const response = await fetch('/api/noticias');
+            const data = await response.json();
 
-        if (data.articles && data.articles.length > 0) {
-          setNoticias(data.articles.slice(0, 6));
-        } else {
-          setNoticias([]);
+            if (data.articles && data.articles.length > 0) {
+                setNoticias(data.articles.slice(0, 6));
+            } else {
+                setNoticias([]);
+            }
+            setLoadingNoticias(false);
+        } catch (error) {
+            console.error('Erro ao buscar notícias:', error);
+            setErrorNoticias(true);
+            setLoadingNoticias(false);
         }
-        setLoadingNoticias(false);
-      } catch (error) {
-        console.error('Erro ao buscar notícias:', error);
-        setErrorNoticias(true);
-        setLoadingNoticias(false);
-      }
     }
 
     fetchNoticias();
