@@ -7,7 +7,7 @@ export const metadata = {
   description: "Copa de Futebol Feminino",
   icons: {
     icon: {
-        url: '/logo.svg',
+        url: '/Logo.svg',
         type: 'image/svg+xml',
       }
   },
@@ -17,7 +17,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="pt-br">
       <head>
-        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+        <link rel="icon" href="/Logo.svg" type="image/svg+xml" />
       </head>
       <body>
         <AOSInit />
