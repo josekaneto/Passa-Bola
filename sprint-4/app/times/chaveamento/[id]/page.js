@@ -297,16 +297,46 @@ export default function ChaveamentoPage() {
         setBrackets(newBrackets);
     }
 
-    // Função para simular todos os rounds
-    const simularTodosRounds = () => {
+    // Adicione esta função para salvar partidas no banco
+    const salvarPartidas = async (matches) => {
+        const authToken = localStorage.getItem("auth_token");
+        
+        for (const match of matches) {
+            if (match.state === "DONE") {
+                try {
+                    await fetch('/api/matches', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            data: new Date().toISOString(),
+                            timeCasa: match.participants[0].name,
+                            timeVisitante: match.participants[1].name,
+                            placarCasa: parseInt(match.participants[0].resultText) || 0,
+                            placarVisitante: parseInt(match.participants[1].resultText) || 0,
+                            vencedor: match.participants.find(p => p.isWinner)?.name,
+                            rodada: match.tournamentRoundText,
+                            competicao: "Copa PAB 2024"
+                        })
+                    });
+                } catch (error) {
+                    console.error('Erro ao salvar partida:', error);
+                }
+            }
+        }
+    };
+
+    // Modifique a função simularTodosRounds
+    const simularTodosRounds = async () => {
         setAlert({
             show: true,
             message: 'Simulando todas as partidas...',
             type: 'info'
         });
 
-        setTimeout(() => {
-            // CORRIGIDO: Gera novos brackets sem chamar setTimes
+        setTimeout(async () => {
             const newBrackets = [];
             if (times.length > 1) {
                 for (let i = 0; i < times.length; i += 8) {
@@ -315,6 +345,8 @@ export default function ChaveamentoPage() {
                         const matches = generateMatches(group);
                         if (Array.isArray(matches) && matches.length > 0) {
                             newBrackets.push(matches);
+                            // Salva as partidas no banco
+                            await salvarPartidas(matches);
                         }
                     }
                 }
@@ -323,7 +355,7 @@ export default function ChaveamentoPage() {
             
             setAlert({
                 show: true,
-                message: 'Simulação concluída com sucesso!',
+                message: 'Simulação concluída e salva com sucesso!',
                 type: 'success'
             });
         }, 500);

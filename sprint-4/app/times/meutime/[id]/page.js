@@ -520,7 +520,7 @@ export default function MeuTime() {
 											</Link>
 
 											<Link
-												href={`/times/historico/${id}`}
+												href={`/times/historicoDePartida/${id}`}
 												className="flex items-center gap-3 p-3 rounded-lg hover:bg-green/10 transition-colors text-green font-semibold"
 											>
 												<HistoryIcon />

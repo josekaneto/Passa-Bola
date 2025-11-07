@@ -19,7 +19,7 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="icon" href="/logo.svg" type="image/svg+xml" />
       </head>
-      <body className="overflow-hidden">
+      <body>
         <AOSInit />
         {children}
       </body>

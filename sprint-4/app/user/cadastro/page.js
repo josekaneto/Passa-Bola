@@ -83,25 +83,42 @@ function CadastreSe() {
 
             if (!response.ok) {
                 // Handle error response
-                setErro(data.error || 'Erro ao criar conta');
+                setAlert({
+                    show: true,
+                    message: data.error || 'Erro ao criar conta',
+                    type: 'error'
+                });
                 setIsSubmitting(false);
                 return;
             }
 
-            // Success! Save token and redirect
+            // Success! Show success message
+            setAlert({
+                show: true,
+                message: 'Conta criada com sucesso! Redirecionando...',
+                type: 'success'
+            });
+
+            // Success! Save token and redirect after 2 seconds
             if (data.token && data.user && data.user.id) {
                 localStorage.setItem('auth_token', data.token);
                 localStorage.setItem('user_id', data.user.id);
-                
-                // Redirect to inicioposlogin page already logged in
-                window.location.href = `/inicioposlogin/${data.user.id}`;
+
+                setTimeout(() => {
+                    window.location.href = `/inicioposlogin/${data.user.id}`;
+                }, 2000);
             } else {
-                // Fallback: if user data is missing, redirect to login
-                window.location.href = "/user/login";
+                setTimeout(() => {
+                    window.location.href = "/user/login";
+                }, 2000);
             }
         } catch (error) {
             console.error('Registration error:', error);
-            setErro('Erro ao conectar com o servidor. Tente novamente.');
+            setAlert({
+                show: true,
+                message: 'Erro ao conectar com o servidor. Tente novamente.',
+                type: 'error'
+            });
             setIsSubmitting(false);
         }
     };
