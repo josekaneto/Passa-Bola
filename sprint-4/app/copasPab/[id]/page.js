@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { FaArrowDown } from 'react-icons/fa';
+import { FaArrowDown, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import Header from '@/app/Components/Header';
 import Footer from '@/app/Components/Footer';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -14,7 +14,7 @@ import "swiper/css/pagination";
 import "aos/dist/aos.css";
 import ContactSection from '@/app/Components/ContactSection';
 import SectionCopa from '@/app/Components/SectionCopa';
-import RoadmapItem from '@/app/Components/RoadmapItem'; // Importe o novo componente
+import RoadmapItem from '@/app/Components/RoadmapItem';
 import LoadingScreen from '@/app/Components/LoadingScreen';
 import { useParams } from 'next/navigation';
 import AuthGuard from '@/app/Components/AuthGuard';
@@ -28,15 +28,73 @@ const roadmapData = [
     { id: 6, title: "Próximos Capítulos", description: "2026: Expansão nacional e novas parcerias para fortalecer ainda mais o futebol feminino.", isPink: false, isUp: false }
 ];
 
+const faqData = [
+    {
+        id: 1,
+        pergunta: "Como posso inscrever meu time na Copa PAB?",
+        resposta: "Para inscrever seu time, basta acessar a página de 'Times' através do menu, fazer o cadastro do seu time preenchendo todas as informações necessárias e aguardar a confirmação da organização."
+    },
+    {
+        id: 2,
+        pergunta: "Quais são os requisitos para participar?",
+        resposta: "A Copa PAB é exclusiva para times femininos amadores. Cada time deve ter no mínimo 11 jogadoras cadastradas, sendo necessário apresentar documentos de identificação de todas as atletas."
+    },
+    {
+        id: 3,
+        pergunta: "Qual é o formato da competição?",
+        resposta: "A Copa PAB é dividida em fases: classificatória (grupos), oitavas de final, quartas de final, semifinal e final. Todos os jogos seguem as regras oficiais da FIFA para futebol feminino."
+    },
+    {
+        id: 4,
+        pergunta: "Onde e quando serão realizados os jogos?",
+        resposta: "Os jogos são realizados em diversos campos parceiros na região de São Paulo. O calendário completo com datas, horários e locais será divulgado após o encerramento das inscrições."
+    },
+    {
+        id: 5,
+        pergunta: "Quais são as premiações?",
+        resposta: "Além do troféu de campeã, oferecemos premiações como: artilheira do campeonato, melhor goleira, revelação da Copa PAB, e prêmios em produtos da nossa loja oficial para as equipes mais bem colocadas."
+    }
+];
+
+function FAQItem({ pergunta, resposta, isOpen, onClick, delay }) {
+    return (
+        <div
+            className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg"
+            data-aos="fade-up"
+            data-aos-delay={delay}
+        >
+            <button
+                onClick={onClick}
+                className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
+            >
+                <h3 className="font-bold text-lg text-gray-800 pr-4">{pergunta}</h3>
+                {isOpen ? (
+                    <FaChevronUp className="text-purple flex-shrink-0 text-xl" />
+                ) : (
+                    <FaChevronDown className="text-purple flex-shrink-0 text-xl" />
+                )}
+            </button>
+            <div
+                className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+            >
+                <div className="px-6 pb-6 text-gray-700 leading-relaxed">
+                    {resposta}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function CopasPabPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [userId, setUserId] = useState(null);
+    const [openFAQ, setOpenFAQ] = useState(null);
     const params = useParams();
 
     useEffect(() => {
         AOS.init({ once: true });
 
-        // Pega o userId da URL ou do localStorage
         const urlUserId = params?.id;
         const storedUserId = localStorage.getItem('user_id');
 
@@ -53,6 +111,10 @@ export default function CopasPabPage() {
         return () => clearTimeout(timer);
     }, [params]);
 
+    const toggleFAQ = (id) => {
+        setOpenFAQ(openFAQ === id ? null : id);
+    };
+
     const links = userId ? [
         { label: "Início", href: `/inicioposlogin/${userId}` },
         { label: "Perfil", href: `/perfil/${userId}` },
@@ -68,8 +130,6 @@ export default function CopasPabPage() {
 
     return (
         <AuthGuard>
-
-
             <main className="flex wf min-h-screen flex-col bg-gray-100 text-gray-800 font-corpo overflow-x-hidden">
                 {/* 1. Seção Principal (Hero) */}
                 <section className="relative flex flex-col min-h-screen">
@@ -120,7 +180,6 @@ export default function CopasPabPage() {
                     <div className="w-[80%] mx-auto px-4" data-aos="fade-up">
                         <h2 className="text-4xl font-bold text-center text-gray-800 mb-16 font-title">De um Sonho à Realidade: A Jornada do Passa a Bola</h2>
                         <div className="relative w-full mx-auto">
-                            {/* Linha do Tempo Central */}
                             <div className="absolute top-0 left-1/2 w-1 h-full bg-gray-200 -translate-x-1/2 lg:top-1/2 lg:left-0 lg:w-full lg:h-1 lg:-translate-y-1/2 lg:translate-x-0"></div>
                             <div className="relative flex flex-col lg:flex-row justify-between items-center">
                                 {roadmapData.map((item, index) => (
@@ -186,6 +245,48 @@ export default function CopasPabPage() {
                             >
                                 Cadastre-se agora!
                             </Link>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Seção FAQ */}
+                <section className="py-16 w-full">
+                    <div className="container mx-auto px-4">
+                        <div className="text-center mb-12">
+                            <span
+                                className="inline-block bg-pink text-white px-4 py-2 rounded-full mb-4 text-sm font-bold"
+                                data-aos="fade-up"
+                            >
+                                DÚVIDAS FREQUENTES
+                            </span>
+                            <h2
+                                className="text-4xl sm:text-5xl font-bold font-title text-gray-800 mb-4"
+                                data-aos="fade-up"
+                                data-aos-delay="100"
+                            >
+                                Tudo o Que Você Precisa Saber
+                                <span className="block text-purple mt-2">Sobre a Copa PAB 2025</span>
+                            </h2>
+                            <p
+                                className="text-gray-600 text-lg max-w-2xl mx-auto"
+                                data-aos="fade-up"
+                                data-aos-delay="200"
+                            >
+                                Reunimos as principais perguntas para facilitar sua participação no maior torneio amador do Brasil
+                            </p>
+                        </div>
+
+                        <div className="max-w-4xl mx-auto space-y-4">
+                            {faqData.map((faq, index) => (
+                                <FAQItem
+                                    key={faq.id}
+                                    pergunta={faq.pergunta}
+                                    resposta={faq.resposta}
+                                    isOpen={openFAQ === faq.id}
+                                    onClick={() => toggleFAQ(faq.id)}
+                                    delay={index * 100 + 300}
+                                />
+                            ))}
                         </div>
                     </div>
                 </section>

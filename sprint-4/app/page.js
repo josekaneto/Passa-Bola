@@ -23,15 +23,41 @@ const links = [
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
+  const [noticias, setNoticias] = useState([]);
+  const [loadingNoticias, setLoadingNoticias] = useState(true);
+  const [errorNoticias, setErrorNoticias] = useState(false);
 
   useEffect(() => {
     AOS.init({ once: true });
 
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1000); // Simula 2 segundos de carregamento
+    }, 1000);
 
-    return () => clearTimeout(timer); // Limpa o timer se o componente for desmontado
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    async function fetchNoticias() {
+      try {
+        setLoadingNoticias(true);
+        const response = await fetch('https://newsapi.org/v2/everything?q=Women-Super-League&apiKey=30939f006bd6433e930278b2aaa79a09');
+        const data = await response.json();
+
+        if (data.articles && data.articles.length > 0) {
+          setNoticias(data.articles.slice(0, 6));
+        } else {
+          setNoticias([]);
+        }
+        setLoadingNoticias(false);
+      } catch (error) {
+        console.error('Erro ao buscar notícias:', error);
+        setErrorNoticias(true);
+        setLoadingNoticias(false);
+      }
+    }
+
+    fetchNoticias();
   }, []);
 
   if (isLoading) {
@@ -55,7 +81,7 @@ export default function Home() {
           </h1>
           <p className="text-base sm:text-lg text-white w-full sm:w-4/5 md:w-7/12" data-aos="fade-right" data-aos-delay="600">
             Passa Bola conecta, promove e dá voz ao futebol feminino no Brasil. Produzimos conteúdo e eventos que geram oportunidades para atletas, clubes e torcedores.
-        </p>
+          </p>
           <Link
             href="/user/login"
             className="mt-6 bg-purple text-white font-semibold px-5 py-3 rounded-xl hover:scale-105 duration-500 transition-transform"
@@ -116,6 +142,93 @@ export default function Home() {
               <h3 className="text-2xl font-bold text-gray-800 mb-2 font-title">TikTok</h3>
               <p className="text-gray-600">Divirta-se com nossos desafios, acompanhe a rotina das jogadoras e veja os lances mais criativos.</p>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Seção de Notícias - DUAS COLUNAS */}
+      <section className="py-16 bg-gradient-to-br w-full">
+        <div className="container mx-auto px-4">
+          <h2
+            className="text-4xl font-bold text-center font-title text-gray-800 mb-4"
+            data-aos="fade-up"
+          >
+            Últimas Notícias do Futebol Feminino
+          </h2>
+          <p
+            className="text-center text-gray-600 mb-12 max-w-2xl mx-auto"
+            data-aos="fade-up"
+            data-aos-delay="100"
+          >
+            Fique por dentro das principais novidades da Women`s Super League
+          </p>
+
+          <div className="max-w-6xl mx-auto px-4 md:px-10">
+            {loadingNoticias ? (
+              // Loading skeleton - 2 colunas
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="flex gap-4 items-start bg-white/80 border border-purple rounded-lg shadow-sm p-4 md:p-6 animate-pulse"
+                  >
+                    <div className="w-24 h-24 bg-gray-300 rounded-md flex-shrink-0"></div>
+                    <div className="flex-1 space-y-3">
+                      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                      <div className="h-3 bg-gray-300 rounded w-full"></div>
+                      <div className="h-3 bg-gray-300 rounded w-2/3"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : errorNoticias ? (
+              <div className="text-center py-10">
+                <p className="text-red-600 font-semibold">Erro ao carregar notícias. Tente novamente mais tarde.</p>
+              </div>
+            ) : noticias.length === 0 ? (
+              <div className="text-center py-10">
+                <p className="text-gray-600">Nenhuma notícia encontrada no momento.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {noticias.map((article, index) => (
+                  <div
+                    key={index}
+                    className="flex gap-4 items-start bg-white/80 border border-purple rounded-lg shadow-sm p-4 md:p-6 hover:shadow-lg transition"
+                    data-aos="fade-up"
+                    data-aos-delay={index * 100}
+                  >
+                    <img
+                      src={article.urlToImage || '/Logo-preta.png'}
+                      alt="Imagem da notícia"
+                      className="w-24 h-24 object-cover rounded-md border border-gray-200 flex-shrink-0"
+                      onError={(e) => { e.target.src = '/Logo-preta.png'; }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-base md:text-lg text-purple mb-1 line-clamp-2">
+                        {article.title}
+                      </h3>
+                      <p className="text-sm text-gray-700 mb-2 line-clamp-2">
+                        {article.description || 'Sem descrição disponível'}
+                      </p>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <a
+                          href={article.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-pink text-xs underline font-semibold hover:text-pink/80 transition"
+                        >
+                          Leia mais
+                        </a>
+                        <span className="text-xs text-gray-500">
+                          {new Date(article.publishedAt).toLocaleDateString('pt-BR')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
