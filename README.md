@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/Logo.svg" alt="Passa-Bola Logo" width="200"/>
+  <img src="https://github.com/user-attachments/assets/26b11701-dd77-48c5-ade2-332528ac98c1" alt="Passa-Bola Logo" width="200"/>
 </p>
 
 <h1 id="passa_bola" align="center">⚽ PASSA-BOLA</h1>
@@ -74,13 +74,18 @@ Este projeto requer as seguintes dependências:
 
 Baixe o Passa-Bola a partir do repositório e instale as dependências:
 
-## 1. Clone o repositório
+### 1. Clone o repositório
 git clone https://github.com/josekaneto/Passa-Bola
 
-## 2. Acesse o diretório do projeto
+### 2. Acesse o diretório do projeto
 cd Passa-Bola
 
-## 3. Instale as dependências
+### 3. Instale as dependências
 npm install
+
+### ▶️ Uso
+
+Execute o projeto com:
+npm run dev
 
 <p align="center"> <a href="#passa_bola">🔙 Voltar ao topo</a> </p> 
