@@ -8,7 +8,7 @@ export const metadata = {
   icons: {
     icon: [
       {
-        url: '/favicon.ico',
+        url: '/logo.ico',
         sizes: 'any',
       },
       {
