@@ -100,7 +100,7 @@ export default function CopasPabPage() {
                             A bola vai rolar novamente no maior palco do futebol feminino amador. Reúna seu time, mostre seu talento e venha competir pela taça mais cobiçada.
                         </p>
                         <Link
-                            href="/user/login"
+                            href={`/times/${userId}`}
                             className="mt-6 bg-purple text-white font-semibold px-5 py-3 rounded-xl hover:scale-105 duration-500 transition-transform"
                         >
                             Inscreva-se Agora

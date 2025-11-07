@@ -52,7 +52,7 @@ export default function PaginaUsuario() {
                             Passa Bola conecta, promove e dá voz ao futebol feminino no Brasil. Produzimos conteúdo e eventos que geram oportunidades para atletas, clubes e torcedores.
                         </p>
                         <Link
-                            href="/user/login"
+                            href={`/times/${usuarioId}`}
                             className="mt-6 bg-purple text-white font-semibold px-5 py-3 rounded-xl hover:scale-105 duration-500 transition-transform"
                         >
                             Venha fazer parte dessa história!

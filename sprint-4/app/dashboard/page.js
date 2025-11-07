@@ -464,7 +464,7 @@ export default function Dashboard() {
                                         <div className="text-right">
                                             <p className="font-bold text-green-600">{time.vitorias} vitórias</p>
                                             <p className="text-sm text-purple font-semibold">{time.pontos} pontos</p>
-                                            <p className="text-xs text-gray-500 mt-1">👁️ {time.visualizacoes.toLocaleString()}</p>
+                                            <p className="text-xs text-gray-500 mt-1">👁️ {time.visualizacoes.toLocaleString('pt-BR')}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -511,7 +511,7 @@ export default function Dashboard() {
                                         </div>
                                         <div className="flex justify-between items-center text-sm text-gray-600">
                                             <span>📅 {new Date(noticia.data).toLocaleDateString('pt-BR')}</span>
-                                            <span>👁️ {noticia.visualizacoes.toLocaleString()} views</span>
+                                            <span>👁️ {noticia.visualizacoes.toLocaleString('pt-BR')} views</span>
                                         </div>
                                     </div>
                                 ))}

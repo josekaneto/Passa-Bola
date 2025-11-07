@@ -59,11 +59,11 @@ export default function Footer({links}) {
                     <div className="flex flex-col gap-2">
                         <h4 className="font-semibold text-2xl text-pink font-title">Recursos</h4>
                         <ul className="flex flex-col gap-2 text-sm text-gray-700">
-                            <li><Link href="/parceiros" className="hover:underline">Parceiros</Link></li>
-                            <li><Link href="/midia-kit" className="hover:underline">Mídia Kit</Link></li>
-                            <li><Link href="/faq" className="hover:underline">FAQ</Link></li>
-                            <li><Link href="/termos" className="hover:underline">Termos</Link></li>
-                            <li><Link href="/privacidade" className="hover:underline">Privacidade</Link></li>
+                            <li><Link href="#" className="hover:underline">Parceiros</Link></li>
+                            <li><Link href="#" className="hover:underline">Mídia Kit</Link></li>
+                            <li><Link href="#" className="hover:underline">FAQ</Link></li>
+                            <li><Link href="#" className="hover:underline">Termos</Link></li>
+                            <li><Link href="#" className="hover:underline">Privacidade</Link></li>
                         </ul>
                     </div>
 
