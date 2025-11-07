@@ -7,6 +7,7 @@ import VoltarButton from "@/app/Components/VoltarButton";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import AuthGuard from "@/app/Components/AuthGuard";
 import PageBanner from "@/app/Components/PageBanner";
+import Footer from "@/app/Components/Footer";
 
 export default function Perfil() {
     const [loading, setLoading] = useState(true);
@@ -695,6 +696,7 @@ export default function Perfil() {
                     </div>
                 )}
             </div>
+            <Footer links={links} />
         </AuthGuard>
     );
 }

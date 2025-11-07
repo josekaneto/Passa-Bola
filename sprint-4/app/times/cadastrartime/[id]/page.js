@@ -12,6 +12,7 @@ import MainContainer from '@/app/Components/MainContainer';
 import SectionContainer from '@/app/Components/SectionContainer';
 import CustomAlert from '@/app/Components/CustomAlert';
 import PageBanner from '@/app/Components/PageBanner';
+import Footer from '@/app/Components/Footer';
 
 
 export default function CadastrarTime() {
@@ -33,7 +34,7 @@ export default function CadastrarTime() {
     const [cor1, setCor1] = useState('#FFFFFF');
     const [cor2, setCor2] = useState('#000000');
     const [imagem, setImagem] = useState(null); // base64
-    const [preview, setPreview] = useState(null); // para mostrar na tela
+    const [preview, setPreview] = useState('/time_padrao.png'); // Inicializa com imagem padrão
     const [alert, setAlert] = useState({ show: false, message: "", type: "info" });
 
     const handleNomeChange = (e) => setNome(e.target.value);
@@ -72,7 +73,7 @@ export default function CadastrarTime() {
                     descricao,
                     cor1,
                     cor2,
-                    imagem
+                    imagem: imagem || null // Se não houver imagem, envia null
                 })
             });
             if (response.ok) {
@@ -216,19 +217,14 @@ export default function CadastrarTime() {
                                     <h3 className="text-xl font-bold text-purple font-title text-center mb-4">Logo do Time</h3>
 
                                     <div className="relative">
-                                        {preview ? (
-                                            <img
-                                                src={preview}
-                                                alt="Logo do Time"
-                                                className="w-40 h-40 rounded-full object-cover shadow-2xl border-4 border-purple ring-4 ring-purple/20 transition-transform duration-300 hover:scale-105"
-                                            />
-                                        ) : (
-                                            <img
-                                                src="/time_padrao.png"
-                                                alt="Logo Padrão"
-                                                className="w-40 h-40 rounded-full object-cover shadow-2xl border-4 border-gray-300 ring-4 ring-gray-200 transition-transform duration-300 hover:scale-105"
-                                            />
-                                        )}
+                                        <img
+                                            src={preview}
+                                            alt="Logo do Time"
+                                            className="w-40 h-40 rounded-full object-cover shadow-2xl border-4 border-purple ring-4 ring-purple/20 transition-transform duration-300 hover:scale-105"
+                                            onError={(e) => {
+                                                e.target.src = '/time_padrao.png'; // Fallback se a imagem não carregar
+                                            }}
+                                        />
                                         <div className="absolute bottom-2 right-2 bg-pink rounded-full p-2 shadow-lg">
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -243,9 +239,25 @@ export default function CadastrarTime() {
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
-                                            Selecionar Logo
+                                            {imagem ? 'Alterar Logo' : 'Selecionar Logo'}
                                         </div>
                                     </label>
+
+                                    {imagem && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setImagem(null);
+                                                setPreview('/time_padrao.png');
+                                            }}
+                                            className="text-sm text-red-500 hover:text-red-700 font-semibold flex items-center gap-1"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            Remover Logo
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 
@@ -257,8 +269,11 @@ export default function CadastrarTime() {
                                     </svg>
                                     <div>
                                         <h4 className="font-bold text-purple mb-2">Dica Importante</h4>
-                                        <p className="text-sm text-gray-700">
+                                        <p className="text-sm text-gray-700 mb-2">
                                             Você só pode criar um time. Escolha o nome e as cores com cuidado!
+                                        </p>
+                                        <p className="text-xs text-gray-600 italic">
+                                            * Se não adicionar uma logo, será usada a imagem padrão.
                                         </p>
                                     </div>
                                 </div>
@@ -369,6 +384,7 @@ export default function CadastrarTime() {
                         </div>
                     </div>
                 </div>
+                <Footer links={links} />
             </div>
         </AuthGuard>
     );

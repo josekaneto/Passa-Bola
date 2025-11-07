@@ -12,6 +12,7 @@ import CustomConfirm from "@/app/Components/CustomConfirm";
 import AuthGuard from "@/app/Components/AuthGuard";
 import TeamChat from "@/app/Components/TeamChat";
 import PageBanner from "@/app/Components/PageBanner";
+import Footer from "@/app/Components/Footer";
 
 export default function MeuTime() {
 	const { id } = useParams();
@@ -91,7 +92,7 @@ export default function MeuTime() {
 						cor1: team.cor1 || "#3b82f6",
 						cor2: team.cor2 || "#d1d5db",
 						id: team.id,
-						imagem: team.imagem || null
+						imagem: team.imagem || null // Certifica que aceita null
 					});
 					setJogadoras(team.members || []);
 					setEditForm({
@@ -99,9 +100,9 @@ export default function MeuTime() {
 						descricao: team.descricao,
 						cor1: team.cor1 || "#3b82f6",
 						cor2: team.cor2 || "#d1d5db",
-						imagem: team.imagem || null
+						imagem: team.imagem || null // Certifica que aceita null
 					});
-					setPreview(team.imagem || null);
+					setPreview(team.imagem || null); // Certifica que aceita null
 					// Check if current user is the captain
 					if (userData && userData.user && userData.user.id === team.captainId) {
 						setIsCaptain(true);
@@ -447,11 +448,14 @@ export default function MeuTime() {
 								<div className="bg-white rounded-2xl shadow-lg p-6">
 									<div className="flex flex-col items-center gap-4">
 										<h2 className="text-2xl font-bold text-pink text-center">{time.nome || "Time"}</h2>
-										{time.imagem ? (
-											<img src={time.imagem} alt="Logo Time" className="w-32 h-32 object-cover rounded-full border-4 border-purple shadow-lg" />
-										) : (
-											<img src="/time-padrao.png" alt="Logo Time" className="w-32 h-32 object-cover rounded-full border-4 border-purple shadow-lg" />
-										)}
+										<img 
+											src={time.imagem || "/time_padrao.png"} 
+											alt="Logo Time" 
+											className="w-32 h-32 object-cover rounded-full border-4 border-purple shadow-lg"
+											onError={(e) => {
+												e.target.src = "/time_padrao.png";
+											}}
+										/>
 									</div>
 								</div>
 
@@ -628,9 +632,14 @@ export default function MeuTime() {
 											<div className="space-y-2">
 												<label className="font-semibold text-gray-700">Imagem:</label>
 												<div className="flex items-center gap-4">
-													{preview && (
-														<img src={preview} alt="Preview" className="w-24 h-24 object-cover rounded-full border-4 border-purple shadow-md" />
-													)}
+													<img 
+														src={preview || "/time_padrao.png"} 
+														alt="Preview" 
+														className="w-24 h-24 object-cover rounded-full border-4 border-purple shadow-md"
+														onError={(e) => {
+															e.target.src = "/time_padrao.png";
+														}}
+													/>
 													<label className="cursor-pointer">
 														<input
 															type="file"
@@ -714,6 +723,7 @@ export default function MeuTime() {
 						</div>
 					</div>
 				</MainContainer>
+				<Footer links={links} />
 			</>
 		</AuthGuard>
 	);

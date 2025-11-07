@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import LoadingScreen from "@/app/Components/LoadingScreen";
 import AuthGuard from "@/app/Components/AuthGuard";
 import PageBanner from "@/app/Components/PageBanner";
+import Footer from "@/app/Components/Footer";
 
 export default function PaginaUsuario() {
 
@@ -218,21 +219,26 @@ export default function PaginaUsuario() {
                                     </Link>
                                 </div>
                             ) : (
-                                times.map((time, idx) => (
-                                    <TimeCard
-                                        key={time.id || idx}
-                                        nome={time.nome}
-                                        descricao={mascaraDescricao(time.descricao)}
-                                        imagem={time.imagem ? time.imagem : "/time_padrao.png"}
-                                        membros={`${time.memberCount || 0}/${time.maxMembers || 15}`}
-                                        link={`/times/meutime/${time.id}`}
-                                    />
-                                ))
+                                    times.map((time, idx) => (
+                                        <TimeCard
+                                            key={time.id || idx}
+                                            nome={time.nome}
+                                            descricao={mascaraDescricao(time.descricao)}
+                                            imagem={
+                                                time.imagem && time.imagem.startsWith('data:image')
+                                                    ? time.imagem
+                                                    : "/time_padrao.png"
+                                            }
+                                            membros={`${time.memberCount || 0}/${time.maxMembers || 15}`}
+                                            link={`/times/meutime/${time.id}`}
+                                        />
+                                    ))
                             )}
                         </div>
                     </div>
                 </div>
             </div>
+            <Footer links={links} />
         </AuthGuard>
     );
 }

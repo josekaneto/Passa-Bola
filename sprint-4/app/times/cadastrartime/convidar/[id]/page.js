@@ -12,6 +12,7 @@ import VoltarButton from "@/app/Components/VoltarButton";
 import Input from "@/app/Components/Input";
 import CustomAlert from "@/app/Components/CustomAlert";
 import PageBanner from "@/app/Components/PageBanner";
+import Footer from "@/app/Components/Footer";
 
 
 export default function ConvidarJogadoras() {
@@ -413,6 +414,7 @@ export default function ConvidarJogadoras() {
                     </div>
                 </div>
             </MainContainer>
+            <Footer links={links} />
         </AuthGuard>
     );
 }

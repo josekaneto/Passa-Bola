@@ -25,7 +25,7 @@ function transformTeam(team) {
     descricao: team.descricao,
     cor1: team.cor1,
     cor2: team.cor2,
-    imagem: team.imagem || '/time_padrao.png',
+    imagem: team.imagem || '/time_padrao.png', // Retorna a imagem padrão se não houver
     captainId: team.captainId?._id?.toString() || team.captainId?.toString(),
     captainName: team.captainId?.nomeCompleto || 'N/A',
     members: team.members?.map(member => ({
@@ -114,7 +114,7 @@ export async function PUT(request, { params }) {
 
     // Update fields
     if (nome !== undefined) {
-      // Check if name is already taken by another team
+      // Check if name is already taken by another ACTIVE team
       const teamWithSameName = await Team.findOne({ 
         nome, 
         _id: { $ne: id },
@@ -131,7 +131,17 @@ export async function PUT(request, { params }) {
     if (descricao !== undefined) team.descricao = descricao;
     if (cor1 !== undefined) team.cor1 = cor1;
     if (cor2 !== undefined) team.cor2 = cor2;
-    if (imagem !== undefined) team.imagem = imagem;
+    
+    // Trata a imagem
+    if (imagem !== undefined) {
+      if (imagem === null || imagem === '' || imagem === '/time-feminino.png') {
+        team.imagem = '/time_padrao.png';
+      } else if (imagem.startsWith('data:image')) {
+        team.imagem = imagem; // Base64
+      } else {
+        team.imagem = imagem; // Outra URL válida
+      }
+    }
 
     await team.save();
 
@@ -203,15 +213,21 @@ export async function DELETE(request, { params }) {
       );
     }
 
+    console.log(`Deletando time: ${team.nome} (ID: ${id})`);
+
     // Soft delete: set isActive to false
     team.isActive = false;
     await team.save();
 
+    console.log(`Time ${team.nome} marcado como inativo (isActive: false)`);
+
     // Remove teamId from all members
-    await User.updateMany(
+    const updateResult = await User.updateMany(
       { teamId: team._id },
       { $set: { teamId: null, isTeamCaptain: false } }
     );
+
+    console.log(`${updateResult.modifiedCount} membros removidos do time`);
 
     return NextResponse.json({
       success: true,

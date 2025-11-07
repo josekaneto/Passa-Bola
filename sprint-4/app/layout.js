@@ -1,25 +1,34 @@
-'use client';
-
 import "./globals.css";
-import AOS from "aos";
 import "aos/dist/aos.css";
-import { useEffect } from "react";
+import AOSInit from './Components/AOSInit';
+
+export const metadata = {
+  title: "Passa a Bola",
+  description: "Copa de Futebol Feminino",
+  icons: {
+    icon: [
+      {
+        url: '/favicon.ico',
+        sizes: 'any',
+      },
+      {
+        url: '/logo.svg',
+        type: 'image/svg+xml',
+      }
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+};
 
 export default function RootLayout({ children }) {
-
-    useEffect(() => {
-      AOS.init({ once: true });
-    }, []);
-
   return (
     <html lang="pt-br">
-    <head>
-      <title>Passa Bola</title>
-      <meta charSet="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <link rel="icon" href="/logo.svg" />
-    </head>
-    <body className="overflow-hidden">
+      <head>
+        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
+      <body className="overflow-hidden">
+        <AOSInit />
         {children}
       </body>
     </html>

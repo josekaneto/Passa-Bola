@@ -17,54 +17,54 @@ function verifyToken(request) {
   }
 }
 
+// Helper function to transform team data
+function transformTeam(team) {
+  return {
+    id: team._id.toString(),
+    nome: team.nome,
+    descricao: team.descricao,
+    cor1: team.cor1,
+    cor2: team.cor2,
+    imagem: team.imagem || '/time_padrao.png', // Retorna a imagem padrão se não houver
+    captainId: team.captainId?._id?.toString() || team.captainId?.toString(),
+    captainName: team.captainId?.nomeCompleto || 'N/A',
+    members: team.members?.map(member => ({
+      userId: member.userId?._id?.toString() || member.userId?.toString(),
+      nomeCompleto: member.userId?.nomeCompleto || 'N/A',
+      posicao: member.position,
+      pernaDominante: member.userId?.pernaDominante || '',
+      jerseyNumber: member.jerseyNumber
+    })) || [],
+    memberCount: team.members?.length || 0,
+    maxMembers: team.maxMembers || 15,
+    isRegistered: team.isRegistered || false,
+    createdAt: team.createdAt
+  };
+}
+
 // GET all teams
 export async function GET(request) {
   try {
-    await connectDB();
-
-    // Get query parameters
-    const { searchParams } = new URL(request.url);
-    const captainId = searchParams.get('captainId');
-
-    // Build query
-    const query = { isActive: true };
-    if (captainId) {
-      query.captainId = captainId;
+    // Verify authentication
+    const decoded = verifyToken(request);
+    if (!decoded) {
+      return NextResponse.json(
+        { error: 'Token de acesso não fornecido ou inválido' },
+        { status: 401 }
+      );
     }
 
-    // Find teams
-    const teams = await Team.find(query)
+    await connectDB();
+
+    const teams = await Team.find({ isActive: true })
       .populate('captainId', 'nomeCompleto email')
       .populate('members.userId', 'nomeCompleto posicao pernaDominante numeroCamisa')
       .sort({ createdAt: -1 })
       .lean();
 
-    // Transform teams to match frontend format
-    const transformedTeams = teams.map(team => ({
-      id: team._id.toString(),
-      nome: team.nome,
-      descricao: team.descricao,
-      cor1: team.cor1,
-      cor2: team.cor2,
-      imagem: team.imagem || '/time-padrao.png',
-      captainId: team.captainId?._id?.toString() || team.captainId?.toString(),
-      captainName: team.captainId?.nomeCompleto || 'N/A',
-      members: team.members?.map(member => ({
-        userId: member.userId?._id?.toString() || member.userId?.toString(),
-        nomeCompleto: member.userId?.nomeCompleto || 'N/A',
-        posicao: member.position,
-        pernaDominante: member.userId?.pernaDominante || '',
-        jerseyNumber: member.jerseyNumber
-      })) || [],
-      memberCount: team.members?.length || 0,
-      maxMembers: team.maxMembers || 15,
-      isRegistered: team.isRegistered || false,
-      createdAt: team.createdAt
-    }));
-
     return NextResponse.json({
       success: true,
-      teams: transformedTeams
+      teams: teams.map(team => transformTeam(team))
     }, { status: 200 });
 
   } catch (error) {
@@ -90,37 +90,18 @@ export async function POST(request) {
 
     await connectDB();
 
-    // Get request body
     const body = await request.json();
     const { nome, descricao, cor1, cor2, imagem } = body;
 
     // Validate required fields
-    if (!nome || !descricao || !cor1 || !cor2) {
+    if (!nome || !descricao) {
       return NextResponse.json(
-        { error: 'Campos obrigatórios: nome, descricao, cor1, cor2' },
+        { error: 'Nome e descrição são obrigatórios' },
         { status: 400 }
       );
     }
 
     // Check if user already has a team
-    const existingTeam = await Team.findOne({ captainId: decoded.userId, isActive: true });
-    if (existingTeam) {
-      return NextResponse.json(
-        { error: 'Você já possui um time cadastrado' },
-        { status: 400 }
-      );
-    }
-
-    // Check if team name already exists
-    const teamWithSameName = await Team.findOne({ nome, isActive: true });
-    if (teamWithSameName) {
-      return NextResponse.json(
-        { error: 'Nome do time já está em uso' },
-        { status: 400 }
-      );
-    }
-
-    // Fetch user data to get position and jersey number
     const user = await User.findById(decoded.userId);
     if (!user) {
       return NextResponse.json(
@@ -129,30 +110,60 @@ export async function POST(request) {
       );
     }
 
-    // Create new team
-    const team = new Team({
+    if (user.teamId) {
+      return NextResponse.json(
+        { error: 'Você já está em um time' },
+        { status: 400 }
+      );
+    }
+
+    // Check if team name already exists
+    const existingTeam = await Team.findOne({ nome, isActive: true });
+    if (existingTeam) {
+      return NextResponse.json(
+        { error: 'Nome do time já está em uso' },
+        { status: 400 }
+      );
+    }
+
+    // Determina a imagem a ser salva
+    let teamImage = '/time_padrao.png'; // Padrão
+    
+    if (imagem) {
+      // Se a imagem for base64, salva como está
+      if (imagem.startsWith('data:image')) {
+        teamImage = imagem;
+      }
+      // Se for uma string vazia ou inválida, usa o padrão
+      else if (imagem.trim() === '' || imagem === '/time-feminino.png') {
+        teamImage = '/time_padrao.png';
+      }
+      // Caso contrário, usa o que foi enviado
+      else {
+        teamImage = imagem;
+      }
+    }
+
+    // Create team
+    const team = await Team.create({
       nome,
       descricao,
-      cor1,
-      cor2,
-      imagem: imagem || '/time-padrao.png',
-      captainId: decoded.userId
+      cor1: cor1 || '#8B5CF6',
+      cor2: cor2 || '#EC4899',
+      imagem: teamImage, // Salva a imagem tratada
+      captainId: user._id,
+      members: [{
+        userId: user._id,
+        position: user.posicao || 'Não definida',
+        jerseyNumber: user.numeroCamisa || null
+      }],
+      isActive: true
     });
 
-    // Automatically add the creator as a member of the team
-    team.members.push({
-      userId: decoded.userId,
-      position: user.posicao || 'Jogadora',
-      jerseyNumber: user.numeroCamisa || 1
-    });
-
-    await team.save();
-
-    // Update user's teamId and isTeamCaptain
-    await User.findByIdAndUpdate(decoded.userId, {
-      teamId: team._id,
-      isTeamCaptain: true
-    });
+    // Update user
+    user.teamId = team._id;
+    user.isTeamCaptain = true;
+    await user.save();
 
     // Populate team data
     await team.populate('captainId', 'nomeCompleto email');
@@ -161,25 +172,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       message: 'Time criado com sucesso',
-      team: {
-        id: team._id.toString(),
-        nome: team.nome,
-        descricao: team.descricao,
-        cor1: team.cor1,
-        cor2: team.cor2,
-        imagem: team.imagem,
-        captainId: team.captainId._id.toString(),
-        captainName: team.captainId.nomeCompleto,
-        members: team.members?.map(member => ({
-          userId: member.userId?._id?.toString() || member.userId?.toString(),
-          nomeCompleto: member.userId?.nomeCompleto || 'N/A',
-          posicao: member.position,
-          pernaDominante: member.userId?.pernaDominante || '',
-          jerseyNumber: member.jerseyNumber
-        })) || [],
-        memberCount: team.members?.length || 0,
-        maxMembers: team.maxMembers || 15
-      }
+      team: transformTeam(team)
     }, { status: 201 });
 
   } catch (error) {
