@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import { Team, User } from '@/lib/models';
+import { Team, User, Invitation, Message } from '@/lib/models';
 import jwt from 'jsonwebtoken';
 
 // Helper function to verify JWT token
@@ -215,12 +215,6 @@ export async function DELETE(request, { params }) {
 
     console.log(`Deletando time: ${team.nome} (ID: ${id})`);
 
-    // Soft delete: set isActive to false
-    team.isActive = false;
-    await team.save();
-
-    console.log(`Time ${team.nome} marcado como inativo (isActive: false)`);
-
     // Remove teamId from all members
     const updateResult = await User.updateMany(
       { teamId: team._id },
@@ -228,6 +222,20 @@ export async function DELETE(request, { params }) {
     );
 
     console.log(`${updateResult.modifiedCount} membros removidos do time`);
+
+    // Remove related invitations and messages
+    const [invitationResult, messageResult] = await Promise.all([
+      Invitation.deleteMany({ teamId: team._id }),
+      Message.deleteMany({ teamId: team._id })
+    ]);
+
+    console.log(`${invitationResult.deletedCount} convites removidos`);
+    console.log(`${messageResult.deletedCount} mensagens removidas`);
+
+    // Delete the team document
+    await Team.deleteOne({ _id: team._id });
+
+    console.log(`Time ${team.nome} removido do banco de dados`);
 
     return NextResponse.json({
       success: true,
