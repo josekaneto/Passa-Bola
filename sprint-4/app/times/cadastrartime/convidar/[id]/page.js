@@ -206,22 +206,8 @@ export default function ConvidarJogadoras() {
             
             <MainContainer>
                 <div className="w-full max-w-7xl mx-auto px-4">
-                    {/* Banner Header */}
-                    <div className="bg-gradient-to-r from-purple via-pink to-green rounded-2xl p-8 mb-6 shadow-lg">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <InviteIcon />
-                                <div>
-                                    <h1 className="text-4xl font-bold text-white">Convidar Jogadoras</h1>
-                                    <p className="text-white/90 mt-1">Convide jogadoras para seu time</p>
-                                </div>
-                            </div>
-                            <VoltarButton 
-                                textColor="text-white" 
-                                hoverColor="hover:text-green"
-                                onClick={() => router.back()} 
-                            />
-                        </div>
+                    <div className="flex justify-end mb-6">
+                        <VoltarButton onClick={() => {router.back()}}/>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

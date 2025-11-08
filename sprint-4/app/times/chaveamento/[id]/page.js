@@ -18,7 +18,6 @@ export default function ChaveamentoPage() {
     const [brackets, setBrackets] = useState([]);
     const [alert, setAlert] = useState({ show: false, message: "", type: "info" });
     
-    // Estados para o SVGViewer - INICIALIZA CORRETAMENTE
     const [tool, setTool] = useState("none");
     const [value, setValue] = useState(INITIAL_VALUE);
 
@@ -31,7 +30,6 @@ export default function ChaveamentoPage() {
         { label: "Sair", href: "/" }
     ];
 
-    // CORRIGIDO: useEffect separado para inicialização
     useEffect(() => {
         const authToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
         if (!authToken) {
@@ -49,7 +47,7 @@ export default function ChaveamentoPage() {
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    const activeTeams = (data.teams || []).filter(team => team.memberCount >= 2);
+                    const activeTeams = data.teams || [];
                     setTimes(activeTeams);
                 } else {
                     setTimes([]);
@@ -63,31 +61,25 @@ export default function ChaveamentoPage() {
         };
 
         fetchTimes();
-    }, [router]); // REMOVIDO usuarioId para evitar loop
+    }, [router]);
 
-    // CORRIGIDO: useEffect separado para gerar brackets quando times mudam
     useEffect(() => {
         if (times.length > 0) {
             generateBrackets(times);
         } else {
             setBrackets([]);
         }
-    }, [times]); // Só executa quando times muda
+    }, [times]);
 
-    // Função para simular pênaltis
     const simulatePenalties = (team1, team2) => {
-        // Cada time cobra 5 pênaltis
         let penaltiesTeam1 = 0;
         let penaltiesTeam2 = 0;
 
-        // Rodada de 5 pênaltis para cada time
         for (let i = 0; i < 5; i++) {
-            // 70% de chance de fazer gol em pênalti
             if (Math.random() > 0.3) penaltiesTeam1++;
             if (Math.random() > 0.3) penaltiesTeam2++;
         }
 
-        // Se ainda empatar nos 5 pênaltis, vai para morte súbita
         while (penaltiesTeam1 === penaltiesTeam2) {
             const team1Scores = Math.random() > 0.3;
             const team2Scores = Math.random() > 0.3;
@@ -103,17 +95,15 @@ export default function ChaveamentoPage() {
         };
     };
 
-    // Função para simular partida entre dois times
     const simulateMatch = (team1, team2) => {
-        // Verifica se ambos os times existem e não são "A Definir"
+        // MODIFICADO: Retorna null se qualquer um dos times for "A Definir"
         if (!team1 || !team2 || team1.name === "A Definir" || team2.name === "A Definir") {
             return null;
         }
 
-        const score1 = Math.floor(Math.random() * 7); // 0 a 6
-        const score2 = Math.floor(Math.random() * 7); // 0 a 6
+        const score1 = Math.floor(Math.random() * 7);
+        const score2 = Math.floor(Math.random() * 7);
 
-        // Se empatar, vai para os pênaltis
         if (score1 === score2) {
             const penalties = simulatePenalties(team1, team2);
             return {
@@ -134,7 +124,6 @@ export default function ChaveamentoPage() {
         };
     };
 
-    // Função para gerar partidas com simulação
     function generateMatches(timesArr) {
         if (!Array.isArray(timesArr) || timesArr.length < 2) return [];
         
@@ -142,14 +131,12 @@ export default function ChaveamentoPage() {
         let matchId = 1;
         let round = 1;
         
-        // Inicializa os times
         let currentTeams = timesArr.map((t, idx) => ({
             id: t.id || t.nome || `team${idx + 1}`,
             name: t.nome || `Time ${idx + 1}`,
             originalData: t
         }));
 
-        // Completa para potência de 2
         const nextPowerOf2 = Math.pow(2, Math.ceil(Math.log2(currentTeams.length)));
         while (currentTeams.length < nextPowerOf2) {
             currentTeams.push({ id: `bye${currentTeams.length}`, name: "A Definir" });
@@ -165,7 +152,6 @@ export default function ChaveamentoPage() {
                 const teamA = currentTeams[i];
                 const teamB = currentTeams[i + 1];
 
-                // Simula a partida se ambos os times são reais
                 const matchResult = simulateMatch(teamA, teamB);
                 
                 let participants = [];
@@ -173,7 +159,6 @@ export default function ChaveamentoPage() {
                 let matchName = `${getRoundName(round, nextPowerOf2)} - Jogo ${Math.floor(i / 2) + 1}`;
                 
                 if (matchResult) {
-                    // Se foi para os pênaltis
                     if (matchResult.isPenalties) {
                         matchName += ` | Pênaltis: ${matchResult.team1Penalties} x ${matchResult.team2Penalties}`;
                         participants = [
@@ -193,7 +178,6 @@ export default function ChaveamentoPage() {
                             }
                         ];
                     } else {
-                        // Partida normal sem pênaltis
                         participants = [
                             { 
                                 id: teamA.id, 
@@ -214,22 +198,14 @@ export default function ChaveamentoPage() {
                     state = "DONE";
                     winners.push(matchResult.winner);
                 } else {
-                    // Se um dos times é "A Definir", apenas adiciona os participantes
+                    // MODIFICADO: Se tem "A Definir", mantém o estado como SCHEDULED
                     participants = [
                         { id: teamA.id, name: teamA.name },
                         { id: teamB.id, name: teamB.name }
                     ];
                     
-                    // Se apenas um time é real, ele avança automaticamente
-                    if (teamA.name !== "A Definir" && teamB.name === "A Definir") {
-                        winners.push(teamA);
-                        state = "WALK_OVER";
-                    } else if (teamB.name !== "A Definir" && teamA.name === "A Definir") {
-                        winners.push(teamB);
-                        state = "WALK_OVER";
-                    } else {
-                        winners.push({ id: `winner${round}-${Math.floor(i / 2) + 1}`, name: "A Definir" });
-                    }
+                    // MODIFICADO: Não avança automaticamente, mantém "A Definir" até ter um vencedor real
+                    winners.push({ id: `winner${round}-${Math.floor(i / 2) + 1}`, name: "A Definir" });
                 }
 
                 roundMatches.push({
@@ -250,7 +226,6 @@ export default function ChaveamentoPage() {
             round++;
         }
 
-        // Preenche nextMatchId
         for (let r = 0; r < allRoundsMatchIds.length - 1; r++) {
             const currRound = allRoundsMatchIds[r];
             const nextRound = allRoundsMatchIds[r + 1];
@@ -266,7 +241,6 @@ export default function ChaveamentoPage() {
         return matches;
     }
 
-    // Função para obter nome da rodada
     function getRoundName(roundNum, totalTeams) {
         const totalRounds = Math.ceil(Math.log2(totalTeams));
         const teamsInRound = Math.pow(2, totalRounds - roundNum + 1);
@@ -279,17 +253,19 @@ export default function ChaveamentoPage() {
         return `Fase de ${teamsInRound}`;
     }
 
-    // Gera brackets dividindo os times em grupos de 8
     function generateBrackets(timesArr) {
         const newBrackets = [];
         if (Array.isArray(timesArr) && timesArr.length > 1) {
             for (let i = 0; i < timesArr.length; i += 8) {
                 const group = timesArr.slice(i, i + 8);
-                // Só gera bracket se tiver pelo menos 2 times
                 if (group.length >= 2) {
                     const matches = generateMatches(group);
                     if (Array.isArray(matches) && matches.length > 0) {
-                        newBrackets.push(matches);
+                        // MODIFICADO: Adiciona informação do grupo ao bracket
+                        newBrackets.push({
+                            matches: matches,
+                            title: `Chave ${Math.floor(i / 8) + 1}`
+                        });
                     }
                 }
             }
@@ -297,7 +273,6 @@ export default function ChaveamentoPage() {
         setBrackets(newBrackets);
     }
 
-    // Adicione esta função para salvar partidas no banco
     const salvarPartidas = async (matches) => {
         const authToken = localStorage.getItem("auth_token");
         
@@ -328,7 +303,6 @@ export default function ChaveamentoPage() {
         }
     };
 
-    // Modifique a função simularTodosRounds
     const simularTodosRounds = async () => {
         setAlert({
             show: true,
@@ -344,8 +318,10 @@ export default function ChaveamentoPage() {
                     if (group.length >= 2) {
                         const matches = generateMatches(group);
                         if (Array.isArray(matches) && matches.length > 0) {
-                            newBrackets.push(matches);
-                            // Salva as partidas no banco
+                            newBrackets.push({
+                                matches: matches,
+                                title: `Chave ${Math.floor(i / 8) + 1}`
+                            });
                             await salvarPartidas(matches);
                         }
                     }
@@ -382,7 +358,6 @@ export default function ChaveamentoPage() {
                 />
 
                 <div className="w-full max-w-[1600px] mx-auto px-4 py-10">
-                    {/* Botões de Ação */}
                     <div className="flex justify-between items-center mb-6" data-aos="fade-left">
                         <button
                             onClick={simularTodosRounds}
@@ -397,7 +372,6 @@ export default function ChaveamentoPage() {
                         <VoltarButton onClick={() => router.back()} />
                     </div>
 
-                    {/* Estatísticas */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" data-aos="fade-up">
                         <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-purple/20">
                             <div className="flex items-center gap-4">
@@ -442,7 +416,7 @@ export default function ChaveamentoPage() {
                         </div>
                     </div>
 
-                    {/* Chaveamentos */}
+                    {/* MODIFICADO: Chaveamentos com título */}
                     <div className="space-y-8">
                         {brackets.length === 0 ? (
                             <div className="bg-white rounded-3xl shadow-xl p-12 border-2 border-purple/10 text-center" data-aos="fade-up">
@@ -459,19 +433,23 @@ export default function ChaveamentoPage() {
                                 </div>
                             </div>
                         ) : (
-                            brackets.map((matches, idx) =>
-                                Array.isArray(matches) && matches.length > 0 ? (
+                            brackets.map((bracket, idx) =>
+                                Array.isArray(bracket.matches) && bracket.matches.length > 0 ? (
                                     <div
                                         key={idx}
                                         className="bg-white rounded-3xl shadow-xl p-8 border-2 border-purple/10"
                                         data-aos="fade-up"
                                         data-aos-delay={idx * 100}
                                     >
-                                        {/* Bracket */}
+                                        {/* ADICIONADO: Título da chave */}
+                                        <h2 className="text-3xl font-bold text-purple">
+                                            {bracket.title}
+                                        </h2>
+
                                         <div className="w-full overflow-x-auto bg-gradient-to-br from-purple/5 to-pink/5 rounded-2xl p-6">
                                             <div style={{ minWidth: '1400px' }}>
                                                 <SingleEliminationBracket
-                                                    matches={matches}
+                                                    matches={bracket.matches}
                                                     matchComponent={Match}
                                                     svgWrapper={({ children, ...props }) => (
                                                         <SVGViewer 
@@ -489,25 +467,7 @@ export default function ChaveamentoPage() {
                                                 />
                                             </div>
                                         </div>
-                                        {/* Legenda */}
-                                        <div className="mt-6 bg-gradient-to-r from-purple/10 to-pink/10 rounded-xl p-6 border border-purple/20">
-                                            <h4 className="text-lg font-bold text-purple mb-4 flex items-center gap-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                </svg>
-                                                Legenda
-                                            </h4>
-                                            <div className="flex flex-wrap items-center gap-6">
-                                                <div className="flex items-center gap-3 bg-white rounded-lg px-4 py-3 border border-blue-300 shadow-sm">
-                                                    <div className="w-4 h-4 rounded-full bg-blue-500 flex-shrink-0"></div>
-                                                    <span className="text-sm text-gray-700 font-semibold">Time Vencedor</span>
-                                                </div>
-                                                <div className="flex items-center gap-3 bg-white rounded-lg px-4 py-3 border border-yellow-300 shadow-sm">
-                                                    <div className="w-4 h-4 rounded-full bg-yellow-500 flex-shrink-0"></div>
-                                                    <span className="text-sm text-gray-700 font-semibold">Time Perdedor</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        {/* REMOVIDO: Legenda */}
                                     </div>
                                 ) : null
                             )
